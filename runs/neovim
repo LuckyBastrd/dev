@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+sudo pacman -S --noconfirm neovim lua51 luarocks
+
+rm -rf $HOME/personal/harpoon
+rm -rf $HOME/personal/vim-arcade
+rm -rf $HOME/personal/plenary
+
+git clone https://github.com/ThePrimeagen/harpoon.git $HOME/personal/harpoon
+cd $HOME/personal/harpoon
+git fetch
+git checkout harpoon2
+
+git clone https://github.com/ThePrimeagen/vim-arcade.git $HOME/personal/vim-arcade
+git clone https://github.com/nvim-lua/plenary.nvim.git $HOME/personal/plenary
+
+sudo luarocks install luacheck

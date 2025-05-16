@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+paru -S --noconfirm \
+  go stylua node npm
+
+go install github.com/air-verse/air@latest

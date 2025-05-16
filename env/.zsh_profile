@@ -1,0 +1,76 @@
+export XDG_CONFIG_HOME=$HOME/.config
+VIM="nvim"
+
+PERSONAL=$XDG_CONFIG_HOME/personal
+DEV_ENV=$HOME/dev
+for i in `find -L $PERSONAL`; do
+    source $i
+done
+
+## All that sweet sweet fzf
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+export GOPATH=$HOME/.local/go
+export GIT_EDITOR=$VIM
+export DENO_INSTALL="$HOME/.deno"
+export N_PREFIX="$HOME/.local/n"
+export FLYCTL_INSTALL="/home/theprimeagen/.fly"
+export PATH="$FLYCTL_INSTALL/bin:$PATH"
+export DEV_ENV_HOME="$HOME/personal/dev"
+
+dev_env() {
+
+}
+
+# Where should I put you?
+bindkey -s ^f "tmux-sessionizer\n"
+
+catr() {
+    tail -n "+$1" $3 | head -n "$(($2 - $1 + 1))"
+}
+
+cat1Line() {
+    cat $1 | tr -d "\n"
+}
+
+
+addToPath() {
+    if [[ "$PATH" != *"$1"* ]]; then
+        export PATH=$PATH:$1
+    fi
+}
+
+addToPathFront() {
+    if [[ ! -z "$2" ]] || [[ "$PATH" != *"$1"* ]]; then
+        export PATH=$1:$PATH
+    fi
+}
+
+addToPathFront $HOME/.zig
+addToPathFront $HOME/.local/.npm-global/bin
+addToPathFront $HOME/.local/odin
+addToPathFront $HOME/.local/apps
+addToPathFront $HOME/.local/scripts
+addToPathFront $HOME/.local/bin
+addToPathFront $HOME/.local/npm/bin
+addToPathFront $HOME/.local/n/bin/
+addToPathFront $HOME/.local/apps/
+
+# do i need this one?
+addToPathFront $HOME/.local/go/bin
+addToPathFront /usr/local/go/bin
+addToPathFront $HOME/personal/sumneko/bin
+addToPathFront $HOME/.deno/bin
+addToPath $HOME/.cargo/bin
+addToPath $HOME/personal/ghostty/zig-out/bin
+addToPath $HOME/.local/personal
+addToPath $HOME/.sst/bin
+addToPathFront $HOME/.local/zig true # some how zig-0.13 just keeps getting added and i CANNOT find it anywhere
+
+# thanks gt
+alias gt='NODE_OPTIONS="--no-deprecation" gt'
+
+source ~/.php_profile
+source ~/.config/envman/PATH.env
+source ~/.config/envman/load.sh
+

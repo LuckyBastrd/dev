@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+paru -S --noconfirm \
+  ttf-font-awesome waybar \
+  ttf-jetbrains-mono-nerd ttf-nerd-fonts-symbols \
+
