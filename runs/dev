@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 paru -S --noconfirm \
-  go stylua node npm
+  go stylua nodejs npm
 
 go install github.com/air-verse/air@latest
+
+curl -fsSL https://deno.land/install.sh | sh

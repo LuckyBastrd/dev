@@ -1,30 +1,42 @@
+# Base config
 export XDG_CONFIG_HOME=$HOME/.config
 VIM="nvim"
 
+# Personal and dev environment
 PERSONAL=$XDG_CONFIG_HOME/personal
 DEV_ENV=$HOME/dev
-for i in `find -L $PERSONAL`; do
+for i in `find -L $PERSONAL -type f -name '*.sh'`; do
     source $i
 done
 
-## All that sweet sweet fzf
+# All that sweet sweet fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# Development tools & paths
 export GOPATH=$HOME/.local/go
-export GIT_EDITOR=$VIM
-export DENO_INSTALL="$HOME/.deno"
+export GOBIN="$GOPATH/bin"
+export PATH="$GOBIN:$PATH"
+
 export N_PREFIX="$HOME/.local/n"
-export FLYCTL_INSTALL="/home/theprimeagen/.fly"
-export PATH="$FLYCTL_INSTALL/bin:$PATH"
+export PATH="$N_PREFIX/bin:$PATH"
+
+export DENO_INSTALL="$HOME/.deno"
+
+export GIT_EDITOR=$VIM
 export DEV_ENV_HOME="$HOME/personal/dev"
 
+# Rust (cargo)
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# Dev env function placeholder
 dev_env() {
 
 }
 
-# Where should I put you?
+# Tmux session shortcut
 bindkey -s ^f "tmux-sessionizer\n"
 
+# Utility functions
 catr() {
     tail -n "+$1" $3 | head -n "$(($2 - $1 + 1))"
 }
@@ -33,7 +45,7 @@ cat1Line() {
     cat $1 | tr -d "\n"
 }
 
-
+# Path management helpers
 addToPath() {
     if [[ "$PATH" != *"$1"* ]]; then
         export PATH=$PATH:$1
@@ -41,36 +53,28 @@ addToPath() {
 }
 
 addToPathFront() {
-    if [[ ! -z "$2" ]] || [[ "$PATH" != *"$1"* ]]; then
+    if [[ -d "$1" && "$PATH" != *"$1"* ]]; then
         export PATH=$1:$PATH
     fi
 }
 
-addToPathFront $HOME/.zig
+# Add dev-related directories to PATH
 addToPathFront $HOME/.local/.npm-global/bin
-addToPathFront $HOME/.local/odin
 addToPathFront $HOME/.local/apps
 addToPathFront $HOME/.local/scripts
 addToPathFront $HOME/.local/bin
 addToPathFront $HOME/.local/npm/bin
-addToPathFront $HOME/.local/n/bin/
-addToPathFront $HOME/.local/apps/
-
-# do i need this one?
+addToPathFront $HOME/.local/n/bin
+addToPath $HOME/.cargo/bin
 addToPathFront $HOME/.local/go/bin
 addToPathFront /usr/local/go/bin
-addToPathFront $HOME/personal/sumneko/bin
 addToPathFront $HOME/.deno/bin
-addToPath $HOME/.cargo/bin
-addToPath $HOME/personal/ghostty/zig-out/bin
-addToPath $HOME/.local/personal
-addToPath $HOME/.sst/bin
-addToPathFront $HOME/.local/zig true # some how zig-0.13 just keeps getting added and i CANNOT find it anywhere
 
-# thanks gt
+# Optional alias (only if 'gt' is used)
 alias gt='NODE_OPTIONS="--no-deprecation" gt'
 
-source ~/.php_profile
-source ~/.config/envman/PATH.env
-source ~/.config/envman/load.sh
+# Optional: only include these if you use PHP or envman
+# source ~/.php_profile
+# source ~/.config/envman/PATH.env
+# source ~/.config/envman/load.sh
 

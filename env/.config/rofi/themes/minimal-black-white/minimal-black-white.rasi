@@ -1,0 +1,88 @@
+/************************************************
+ * ROFI Color theme
+ * Minimal Black White
+ * User: LuckyBastrds
+ ***********************************************/
+
+* {
+  emphasis:   bold #000000;
+  text:       #ffffff;
+  text-alt:   #aaaaaa;
+  bg:         #000000;
+
+  spacing: 0;
+  background-color: @bg;
+  text-color: @text;
+  font: "monospace 12";
+}
+
+window {
+  fullscreen: false;
+  location: center;
+  anchor: center;
+  width: 600px;
+  height: 300px;
+  background-color: @bg;
+  border: 2px;
+  border-color: #ffffff;
+}
+
+mainbox {
+  padding: 20px;
+  background-color: @bg;
+  children: [inputbar, listview];
+}
+
+inputbar {
+  margin: 0px;
+  background-color: @bg;
+  children: [prompt, textbox-prompt-colon, entry, case-indicator];
+}
+
+prompt {
+  text-color: @text;
+}
+
+textbox-prompt-colon {
+  expand: false;
+  str: ":";
+  text-color: @text-alt;
+}
+
+entry {
+  margin: 0px;
+  text-color: @text;
+  placeholder: "";
+}
+
+listview {
+  border: 0px;
+  spacing: 5px;
+  dynamic: true;
+  scrollbar: false;
+}
+
+element {
+  padding: 5px;
+  border-radius: 3px;
+}
+
+element-text {
+  highlight: @emphasis;
+}
+
+element normal normal, element alternate normal {
+  text-color: @text;
+  background-color: transparent;
+}
+
+element selected normal {
+  text-color: #000000;
+  background-color: #ffffff;
+}
+
+element normal urgent, element alternate urgent, element selected urgent,
+element normal active, element alternate active, element selected active {
+  text-color: @text;
+  background-color: transparent;
+}
