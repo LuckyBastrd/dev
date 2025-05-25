@@ -1,90 +1,193 @@
-{
-    "layer": "top",
-    "spacing": 0,
-    "height": 0,
+// -*- mode: jsonc -*-
+//-----------------------------------------------------------------------------------
+//
+// 	,-----.
+//	|  |) /_  ,--,--.,--.--. ,---.
+// 	|  .-.  \' ,-.  ||  .--'(  .-'
+// 	|  '--' /\ '-'  ||  |   .-'  `)
+// 	`------'  `--`--'`--'   `----'
+//
+//
+//      , _ ,        RESUME: Waybar config to my main PC
+//     ( o o )
+//    /'` ' `'\
+//    |'''''''|      AUTHOR:  Andr3xDev
+//    |\\'''//|      URL:  https://github.com/Andr3xDev/Dotfiles
+//       """
+//------------------------------------------------------------------------------------
 
-    "margin-top": 8,
-    "margin-right": 8,
+
+
+{
+
+
+    //--------------------------------------------------------------------------------
+    //    General
+    //--------------------------------------------------------------------------------
+
+    "layer": "top",
+    "position": "top",
+    "height": 37,
+    "spacing": 0,
+    "margin-top": 6,
+    "margin-left": 20,
     "margin-bottom": 0,
-    "margin-left": 8,
+    "margin-right": 20,
+
+
+
+    //--------------------------------------------------------------------------------
+    //    Left Modules
+    //--------------------------------------------------------------------------------
 
     "modules-left": [
-        "sway/workspaces"
+	    "clock",
+        "hyprland/workspaces"
     ],
+
+
+
+    //--------------------------------------------------------------------------------
+    //    Center Modules
+    //--------------------------------------------------------------------------------
 
     "modules-center": [
-        "clock"
     ],
+
+
+
+    //--------------------------------------------------------------------------------
+    //    Right Modules
+    //--------------------------------------------------------------------------------
 
     "modules-right": [
-        "tray",
-        "cpu_text",
+	    "custom/spotify",
+        "wireplumber",
+        "bluetooth",
+        "network",
         "cpu",
         "memory",
-        "battery",
-        "network",
-        "pulseaudio"
+        "battery"
     ],
 
-    "sway/workspaces": {
+
+
+    //--------------------------------------------------------------------------------
+    //    Left Configuration
+    //--------------------------------------------------------------------------------
+
+    "hyprland/workspaces": {
         "disable-scroll": true,
+	    "disable-select-unfocused": true,
         "all-outputs": true,
-        "tooltip": false
+        "warp-on-scroll": false,
+        "format": "{icon}",
+        "format-icons": {
+            "1": "",
+            "2": "",
+            "3": "",
+            "4": "",
+            "5": "",
+	        "6": "",
+	        "7": "󰡖",
+	        "8": "󰡖",
+	        "9": "󰡖",
+            "10": "󰡖",
+        }
     },
 
-    "tray": {
-        "spacing": 10,
-        "tooltip": false
+    "custom/workspaces": {
+        "exec": "~/.config/waybar/scripts/visible_workspaces",
+        "interval": 1,
+        "return-type": "json"
     },
 
     "clock": {
-        "format": "{:%I:%M %p - %a, %d %b %Y}",
-        "tooltip": false
+        "format": "{:%Y-%m-%d │ %I:%M %p}",
+        "tooltip-format": "{:%A, %B %d, %Y %I:%M:%S %p}",
+        "on-click": "galendae"
+    },
+
+
+
+    //--------------------------------------------------------------------------------
+    //    Right Configuration
+    //--------------------------------------------------------------------------------
+
+   "bluetooth": {
+        "format": "",
+        "format-on": "",
+        "format-connected": "",
+        "format-disconnected": "󰂲",
+        "tooltip-format": "Bluetooth: {status}",
+        "tooltip-format-on": "Bluetooth: {status}",
+        "tooltip-format-connected": "Connected to: {device_alias} ({device_mac})",
+        "on-click": "ghostty -e bluetui",
+        "interval": 3,
+    },
+
+    "memory": {
+        "interval": 1,
+        "format": "{}% "
     },
 
     "cpu": {
-        "format": "cpu {usage}%",
-        "interval": 2,
-
+        "format": "{usage}% ",
+        "interval": 1,
         "states": {
+            "warning": 75,
             "critical": 90
         }
     },
 
-    "memory": {
-        "format": "mem {percentage}%",
-        "interval": 2,
-
-        "states": {
-            "critical": 80
-        }
-    },
-
     "battery": {
-        "format": "bat {capacity}%",
-        "interval": 5,
+        "interval": 1,
         "states": {
-            "warning": 20,
-            "critical": 10
+            "good": 90,
+            "warning": 15,
+            "critical": 5
         },
-        "tooltip": false
+        "format": "{capacity}  {icon}",
+        "format-full": "{capacity} {icon}",
+        "format-charging": "{capacity}  ",
+        "format-plugged": "{capacity}  ",
+        "format-icons": ["", "", "", "", ""]
     },
 
     "network": {
-        "format-wifi" : "wifi {bandwidthDownBits}",
-        "format-ethernet": "enth {bandwidthDownBits}",
-        "format-disconnected" : "no network",
-        "interval": 5,
-        "tooltip": false
+        "format": "",
+        "format-ethernet": "󰌗",
+        "format-wifi": "{icon} ",
+        "format-disconnected": "",
+        "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+        "tooltip-format-ethernet": "{ifname}",
+        "tooltip-format-disconnected": "Disconnected",
+        "on-click": "ghostty -e nmtui"
     },
 
-    "pulseaudio": {
-        "scroll-step": 5,
-        "max-volume": 150,
-        "format": "vol {volume}%",
-        "format-bluetooth": "vol {volume}%",
-        "nospacing": 1,
-        "on-click": "pavucontrol",
-        "tooltip": false
+    "wireplumber": {
+        "format": "{icon}",
+        "format-muted": "󰝟",
+        "tooltip-format": "Volume: {volume}%",
+        "tooltip-format-muted": "Muted: {volume}%",
+        "format-icons": {
+        "default": [
+                "",  // 0–33%
+                "",  // 34–66%
+                ""   // 67–100%
+            ]
+        },
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right": "pavucontrol"
+    },
+
+    "custom/spotify": {
+        "exec": "/sbin/python3 ~/.config/waybar/mediaplayer.py --player spotify",
+       	"format": " {}   ",
+       	"return-type": "json",
+       	"on-click": "playerctl --player=spotify play-pause",
+       	"on-double-click": "playerctl --player=spotify next",
+       	"on-double-click-right": "playerctl --player=spotify previous"
     }
 }

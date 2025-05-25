@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+paru -S --noconfirm \
+    jq grim slurp wl-clipboard grimblast-git

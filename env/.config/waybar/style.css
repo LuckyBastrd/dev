@@ -1,93 +1,242 @@
-* {
-    border: none;
-    border-radius: 0;
-    min-height: 0;
-    font-family: "iosevka nerd font";
-    font-weight: 500;
-    font-size: 14px;
-    padding: 0;
+/*
+ *
+ *     ,---.   ,--.           ,--.           ,-----.
+ *    '   .-',-'  '-.,--. ,--.|  | ,---.     |  |) /_  ,--,--.,--.--.
+ *    `.  `-.'-.  .-' \  '  / |  || .-. :    |  .-.  \' ,-.  ||  .--'
+ *    .-'    | |  |    \   '  |  |\   --.    |  '--' /\ '-'  ||  |
+ *    `-----'  `--'  .-'  /   `--' `----'    `------'  `--`--'`--'
+ *                   `---'
+ *
+ *
+ *       , _ ,        RESUME: Minimal style config to have basic info
+ *      ( o o )
+ *     /'` ' `'\
+ *     |'''''''|      AUTHOR:  Andr3xDev
+ *     |\\'''//|      URL:  https://github.com/Andr3xDev/Dotfiles
+ *        """
+ */
+
+
+
+/*--------------------------------------------------------------------------------
+ *    Colors
+ *-------------------------------------------------------------------------------*/
+
+@define-color background            #282828;
+@define-color hard_background       #1B1B1B;
+@define-color second_background     #45403D;
+@define-color foreground            #EBDBB2;
+@define-color selection_foreground  #D8A657;
+@define-color selection_background  #3c3836;
+@define-color color_blue            #7DAEA3;
+@define-color color_green           #A9B665;
+@define-color color_green_2         #B8BB26;
+@define-color color_yellow          #D8A657;
+@define-color color_yellow_2        #FABD2F;
+@define-color color_red        	    #EA6962;
+@define-color color_red_2        	#FB4934;
+@define-color color_purple          #d3869B;
+@define-color color_aqua            #89B482;
+@define-color color_grey            #7C6F64;
+@define-color color_white           #A89984;
+
+
+
+/*--------------------------------------------------------------------------------
+ *    General
+ *-------------------------------------------------------------------------------*/
+
+*{
+    font-family: FontAwesome, Jetbrains Mono Nerd;
+    font-size: 13px;
+}
+
+#waybar > box {
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.7);
 }
 
 window#waybar {
-    background: #1d2021;
-    border: 2px solid #3c3836;
+    background-color: @background;
+    color: @foreground;
+    border-top: 3px solid;
+    border-bottom: 3px solid;
+    border-color: @hard_background;
 }
 
-tooltip {
-    background-color: #1d2021;
-    border: 2px solid #7c6f64;
+
+
+/*--------------------------------------------------------------------------------
+ *    Sections
+ *-------------------------------------------------------------------------------*/
+
+.modules-right {
+    border-top: 3px solid;
+    border-right: 3px solid;
+    border-bottom: 3px solid;
+    border-color: @hard_background;
 }
 
-#clock,
-#tray,
-#cpu,
-#memory,
-#battery,
-#network,
-#pulseaudio {
-    margin: 6px 6px 6px 0px;
-    padding: 2px 8px;
+.modules-center {
+    border-top: 3px solid;
+    border-bottom: 3px solid;
+    border-color: @hard_background;
 }
+
+.modules-left {
+    background-color: @background;
+    border-top: 3px solid;
+    border-left: 3px solid;
+    border-bottom: 3px solid;
+    border-color: @hard_background;
+}
+
+
+
+/*--------------------------------------------------------------------------------
+ *    Left Modules
+ *-------------------------------------------------------------------------------*/
 
 #workspaces {
-    background-color: #303536;
-    margin: 6px 0px 6px 6px;
-    border: 2px solid #434a4c;
+    background-color: @background;
+    color: @foreground;
+    padding-left: 1em;
 }
 
 #workspaces button {
-    all: initial;
-    min-width: 0;
-    box-shadow: inset 0 -3px transparent;
-    padding: 2px 4px;
-    color: #c7ab7a;
+    color: @foreground;
+    padding: 0 6px;
 }
 
-#workspaces button.focused {
-    color: #ddc7a1;
+#workspaces button:hover {
+    color: @color_aqua;
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    transition: none;
 }
 
-#workspaces button.urgent {
-    background-color: #e78a4e;
+#workspaces button.active {
+    color: @color_green_2;
+}
+
+#workspaces button.active:hover {
+     color: @color_aqua;
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    transition: none;
 }
 
 #clock {
-    background-color: #303536;
-    border: 2px solid #434a4c;
-    color: #d4be98;
+    background-color: @background;
+    padding-right: 1.5em;
+    padding-left: 1.5em;
+    border-right: 3px;
+    border-right-style: solid;
+    border-right-color: @color_yellow;
 }
 
-#tray {
-    background-color: #d4be98;
-    border: 2px solid #c7ab7a;
-}
+
+
+/*--------------------------------------------------------------------------------
+ *    Right Modules
+ *-------------------------------------------------------------------------------*/
 
 #battery {
-    background-color: #a9b665;
-    border: 2px solid #c7ab7a;
-    color: #6c782e;
+    color: @foreground;
+    padding-left: 0.5em;
+    padding-right: 1.5em;
+    min-width: 37px;
 }
 
-#cpu,
-#memory,
-#network,
-#pulseaudio {
-    background-color: #ddc7a1;
-    border: 2px solid #c7ab7a;
-    color: #1d2021;
+#battery.warning {
+    color: @color_yellow_2; /* low battery (<15%) */
 }
 
-#cpu.critical,
+#battery.critical {
+    color: @color_red_2; /* very low battery (<5%) */
+}
+
+#battery.charging,
+#battery.plugged {
+    color: @color_green_2; /* charging or plugged in */
+}
+
+#memory {
+    padding-left: 1em;
+    padding-right: 0.5em;
+    min-width: 37px;
+}
+
+#memory.warning {
+    color: @color_yellow_2; /* high usage */
+}
+
 #memory.critical {
-    background-color: #ddc7a1;
-    border: 2px solid #c7ab7a;
-    color: #c14a4a;
+    color: @color_red_2; /* very high usage */
 }
 
-#battery.warning,
-#battery.critical,
-#battery.urgent {
-    background-color: #ddc7a1;
-    border: 2px solid #c7ab7a;
-    color: #c14a4a;
+#cpu {
+    padding-right: 0.5em;
+    padding-left: 1.5em;
+    border-left: 3px;
+    border-left-style: solid;
+    border-left-color: @color_green;
+    min-width: 37px;
+}
+
+#cpu.warning {
+    color: @color_yellow_2; /* moderate usage */
+}
+
+#cpu.critical {
+    color: @color_red_2; /* high usage */
+}
+
+#network {
+    padding-right: 1.5em;
+    padding-left: 1em;
+}
+
+#network.disconnected {
+    color: @color_red_2;
+}
+
+#bluetooth{
+    padding-right: 0.5em;
+    padding-left: 1em;
+}
+
+#bluetooth.disabled {
+    color: @color_grey;
+}
+
+#wireplumber{
+    background-color: @background;
+    padding-right: 1em;
+    padding-left: 1.5em;
+}
+
+#wireplumber.muted {
+    color: @color_grey;
+}
+
+#custom-spotify {
+    padding-right: 1.5em;
+    padding-left: 1.5em;
+    border-right: 3px;
+    border-right-style: solid;
+    border-right-color: @color_blue;
+}
+
+#custom-spotify.custom-spotify-playing {
+    color: @color_green_2;
+}
+
+#custom-spotify.custom-spotify-paused {
+    color: @color_grey;
 }
