@@ -1,100 +1,94 @@
-/*
- *
- *     ,---.   ,--.           ,--.           ,-----.
- *    '   .-',-'  '-.,--. ,--.|  | ,---.     |  |) /_  ,--,--.,--.--.
- *    `.  `-.'-.  .-' \  '  / |  || .-. :    |  .-.  \' ,-.  ||  .--'
- *    .-'    | |  |    \   '  |  |\   --.    |  '--' /\ '-'  ||  |
- *    `-----'  `--'  .-'  /   `--' `----'    `------'  `--`--'`--'
- *                   `---'
- *
- *
- *       , _ ,        RESUME: Minimal style config to have basic info
- *      ( o o )
- *     /'` ' `'\
- *     |'''''''|      AUTHOR:  Andr3xDev
- *     |\\'''//|      URL:  https://github.com/Andr3xDev/Dotfiles
- *        """
- */
+/************************************************
+ * Oxocarbon Bim Dark - Waybar Theme
+ * Author: LuckyBastrds
+ * Based on the Oxocarbon palette:
+ * https://github.com/nyoom-engineering/oxocarbon
+ ************************************************/
 
+/*------------------------------
+ * Color Palette (Oxocarbon)
+ *------------------------------*/
 
+/* Base/background grays */
+@define-color background             #161616; /* base00 – main background */
+@define-color background-secondary   #262626; /* base01 – alt background */
+@define-color background-tertiary    #393939; /* base02 – selection bg */
 
-/*--------------------------------------------------------------------------------
- *    Colors
- *-------------------------------------------------------------------------------*/
+/* Surfaces and borders */
+@define-color surface                #525252; /* base03 – muted text, outer borders */
+@define-color border                 #393939; /* base02 – darker inner borders */
 
-@define-color background            #282828;
-@define-color hard_background       #1B1B1B;
-@define-color second_background     #45403D;
-@define-color foreground            #EBDBB2;
-@define-color selection_foreground  #D8A657;
-@define-color selection_background  #3c3836;
-@define-color color_blue            #7DAEA3;
-@define-color color_green           #A9B665;
-@define-color color_green_2         #B8BB26;
-@define-color color_yellow          #D8A657;
-@define-color color_yellow_2        #FABD2F;
-@define-color color_red        	    #EA6962;
-@define-color color_red_2        	#FB4934;
-@define-color color_purple          #d3869B;
-@define-color color_aqua            #89B482;
-@define-color color_grey            #7C6F64;
-@define-color color_white           #A89984;
+/* Foregrounds */
+@define-color foreground             #FFFFFF; /* base06 – main foreground */
+@define-color foreground-secondary   #DDE1E6; /* base04 – secondary fg */
+@define-color foreground-muted       #F2F4F8; /* base05 – muted fg */
 
+/* Primary accent blues */
+@define-color blue                   #33B1FF; /* base0B – primary accent */
+@define-color light-blue             #78A9FF; /* base09 – lighter blue */
+@define-color sky                    #82CFFF; /* base0F – special */
 
+/* Semantic colors */
+@define-color green                  #42BE65; /* base0D – success, charging */
+@define-color red                    #EE5396; /* base0A – warning, errors */
+@define-color pink                   #FF7EB6; /* base0C – warning highlight */
+@define-color purple                 #BE95FF; /* base0E – keywords, tags */
+@define-color teal                   #3DDBD9; /* base08 – error dim */
+@define-color cyan                   #08BDBA; /* base07 – error highlight */
 
-/*--------------------------------------------------------------------------------
+@define-color gray                   #525252; /* base03 – muted gray */
+@define-color overlay                rgba(0, 0, 0, 0.7); /* Shadow overlay */
+
+/*------------------------------
  *    General
- *-------------------------------------------------------------------------------*/
+ *-----------------------------*/
 
-*{
+* {
     font-family: FontAwesome, Jetbrains Mono Nerd;
     font-size: 13px;
 }
 
 #waybar > box {
-    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.7);
+    box-shadow: 5px 5px 5px 5px @overlay;
 }
 
 window#waybar {
     background-color: @background;
     color: @foreground;
-    border-top: 3px solid;
-    border-bottom: 3px solid;
-    border-color: @hard_background;
+    border-top: 3px solid @surface;
+    border-bottom: 3px solid @surface;
 }
 
-
-
-/*--------------------------------------------------------------------------------
- *    Sections
- *-------------------------------------------------------------------------------*/
+/*------------------------------
+ *    Modules - Shared (outer borders)
+ *-----------------------------*/
 
 .modules-right {
-    border-top: 3px solid;
-    border-right: 3px solid;
-    border-bottom: 3px solid;
-    border-color: @hard_background;
+    border-top: 3px solid @surface;
+    border-right: 3px solid @surface;
+    border-bottom: 3px solid @surface;
 }
 
 .modules-center {
-    border-top: 3px solid;
-    border-bottom: 3px solid;
-    border-color: @hard_background;
+    border-top: 3px solid @surface;
+    border-bottom: 3px solid @surface;
 }
 
 .modules-left {
     background-color: @background;
-    border-top: 3px solid;
-    border-left: 3px solid;
-    border-bottom: 3px solid;
-    border-color: @hard_background;
+    border-top: 3px solid @surface;
+    border-left: 3px solid @surface;
+    border-bottom: 3px solid @surface;
 }
 
+tooltip {
+    background-color: @background-secondary;
+    border: 2px solid @surface;
+}
 
-
-/*--------------------------------------------------------------------------------
- *    Left Modules
- *-------------------------------------------------------------------------------*/
+/*------------------------------
+ *    Modules - Left
+ *-----------------------------*/
 
 #workspaces {
     background-color: @background;
@@ -108,7 +102,7 @@ window#waybar {
 }
 
 #workspaces button:hover {
-    color: @color_aqua;
+    color: @green;
     background-color: transparent;
     background-image: none;
     border: none;
@@ -118,11 +112,11 @@ window#waybar {
 }
 
 #workspaces button.active {
-    color: @color_green_2;
+    color: @blue;
 }
 
 #workspaces button.active:hover {
-     color: @color_aqua;
+    color: @green;
     background-color: transparent;
     background-image: none;
     border: none;
@@ -135,17 +129,14 @@ window#waybar {
     background-color: @background;
     padding-right: 1.5em;
     padding-left: 1.5em;
-    border-right: 3px;
-    border-right-style: solid;
-    border-right-color: @color_yellow;
+    border-right: 3px solid @purple;
 }
 
+/*------------------------------
+ *    Modules - Right
+ *-----------------------------*/
 
-
-/*--------------------------------------------------------------------------------
- *    Right Modules
- *-------------------------------------------------------------------------------*/
-
+/* First Section */
 #battery {
     color: @foreground;
     padding-left: 0.5em;
@@ -153,17 +144,13 @@ window#waybar {
     min-width: 37px;
 }
 
-#battery.warning {
-    color: @color_yellow_2; /* low battery (<15%) */
-}
-
 #battery.critical {
-    color: @color_red_2; /* very low battery (<5%) */
+    color: @red;
 }
 
 #battery.charging,
 #battery.plugged {
-    color: @color_green_2; /* charging or plugged in */
+    color: @green;
 }
 
 #memory {
@@ -172,71 +159,62 @@ window#waybar {
     min-width: 37px;
 }
 
-#memory.warning {
-    color: @color_yellow_2; /* high usage */
-}
-
 #memory.critical {
-    color: @color_red_2; /* very high usage */
+    color: @red;
 }
 
 #cpu {
     padding-right: 0.5em;
     padding-left: 1.5em;
-    border-left: 3px;
-    border-left-style: solid;
-    border-left-color: @color_green;
     min-width: 37px;
-}
-
-#cpu.warning {
-    color: @color_yellow_2; /* moderate usage */
+    border-left: 3px solid @pink;
 }
 
 #cpu.critical {
-    color: @color_red_2; /* high usage */
+    color: @red;
 }
 
+/* Second Section */
 #network {
     padding-right: 1.5em;
     padding-left: 1em;
 }
 
 #network.disconnected {
-    color: @color_red_2;
+    color: @red;
 }
 
-#bluetooth{
+#bluetooth {
     padding-right: 0.5em;
     padding-left: 1em;
 }
 
 #bluetooth.disabled {
-    color: @color_grey;
+    color: @gray;
 }
 
-#wireplumber{
+#wireplumber {
     background-color: @background;
     padding-right: 1em;
     padding-left: 1.5em;
 }
 
 #wireplumber.muted {
-    color: @color_grey;
+    color: @gray;
 }
 
+/* Third Section */
 #custom-spotify {
     padding-right: 1.5em;
     padding-left: 1.5em;
-    border-right: 3px;
-    border-right-style: solid;
-    border-right-color: @color_blue;
+    border-right: 3px solid @teal;
 }
 
 #custom-spotify.custom-spotify-playing {
-    color: @color_green_2;
+    color: @green;
 }
 
 #custom-spotify.custom-spotify-paused {
-    color: @color_grey;
+    color: @gray;
 }
+
