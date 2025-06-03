@@ -1,0 +1,64 @@
+/************************************************
+ * Oxocarbon Bim Dark - Rofi Theme
+ * Author: LuckyBastrds
+ * Based on the Oxocarbon palette -https://github.com/nyoom-engineering/oxocarbon
+ ***********************************************/
+
+
+
+* {
+    /* Theme settings */
+    highlight: bold italic;
+    scrollbar: true;
+
+    /* Oxocarbon base grays */
+    oxo-bg0:         #161616; /* base00 – main background */
+    oxo-bg1:         #262626; /* base01 – alt background */
+    oxo-bg2:         #393939; /* base02 – selection bg */
+    oxo-gray:        #525252; /* base03 – borders, muted text */
+    oxo-fg1:         #DDE1E6; /* base04 – secondary fg */
+    oxo-fg0:         #F2F4F8; /* base05 – main foreground */
+    oxo-fg-bright:   #FFFFFF; /* base06 – rare emphasis */
+
+    /* Accent & semantic colors */
+    oxo-accent:         #33B1FF; /* base0B – primary accent (blue) */
+    oxo-accent-light:   #78A9FF; /* base09 – lighter blue, for selection */
+    oxo-warn-dark:      #EE5396; /* base0A – warning base */
+    oxo-warn-light:     #FF7EB6; /* base0C – warning highlight */
+    oxo-error-dark:     #3DDBD9; /* base08 – error base */
+    oxo-error-light:    #08BDBA; /* base07 – error highlight */
+    oxo-keyword:        #BE95FF; /* base0E – tag/keyword */
+    oxo-success:        #42BE65; /* base0D – success, strings */
+    oxo-special:        #82CFFF; /* base0F – special/deprecated */
+
+    /* Theme colors */
+    background:                  @oxo-bg0;
+    background-color:            @background;
+    foreground:                  @oxo-fg0;
+    border-color:                @oxo-gray;
+    separatorcolor:              @border-color;
+    scrollbar-handle:            @border-color;
+
+    normal-background:           @background;
+    normal-foreground:           @foreground;
+    alternate-normal-background: @oxo-bg1;
+    alternate-normal-foreground: @foreground;
+    selected-normal-background:  @oxo-bg2;
+    selected-normal-foreground:  @oxo-fg1;
+
+    active-background:           @oxo-accent;
+    active-foreground:           @background;
+    alternate-active-background: @active-background;
+    alternate-active-foreground: @active-foreground;
+    selected-active-background:  @oxo-accent-light;
+    selected-active-foreground:  @active-foreground;
+
+    urgent-background:           @oxo-warn-dark;
+    urgent-foreground:           @background;
+    alternate-urgent-background: @urgent-background;
+    alternate-urgent-foreground: @urgent-foreground;
+    selected-urgent-background:  @oxo-warn-light;
+    selected-urgent-foreground:  @urgent-foreground;
+}
+
+@import "oxocarbon-common"
