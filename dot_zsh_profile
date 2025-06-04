@@ -44,6 +44,13 @@ cat1Line() {
     cat $1 | tr -d "\n"
 }
 
+# chezmoi edit and apply function
+cedit() {
+     local file
+     file=$(chezmoi managed | fzf --prompt="Edit dotfile: " --height=40%) || return
+     chezmoi edit --apply "$file"
+}
+
 # Path management helpers
 addToPath() {
     if [[ "$PATH" != *"$1"* ]]; then
