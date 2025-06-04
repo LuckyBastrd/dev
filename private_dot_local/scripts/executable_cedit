@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+cd ~ || exit
+
+# Select the file using fzf
+file=$(chezmoi managed | fzf --prompt="Edit dotfile: ") || exit
+
+# If file is selected, apply the changes using chezmoi
+if [[ -n $file ]]; then
+    chezmoi edit --apply "$file"
+else
+    echo "No file selected or file not managed by chezmoi."
+fi

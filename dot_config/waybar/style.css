@@ -1,0 +1,220 @@
+/************************************************
+ * Oxocarbon Bim Dark - Waybar Theme
+ * Author: LuckyBastrds
+ * Based on the Oxocarbon palette:
+ * https://github.com/nyoom-engineering/oxocarbon
+ ************************************************/
+
+/*------------------------------
+ * Color Palette (Oxocarbon)
+ *------------------------------*/
+
+/* Base/background grays */
+@define-color background             #161616; /* base00 – main background */
+@define-color background-secondary   #262626; /* base01 – alt background */
+@define-color background-tertiary    #393939; /* base02 – selection bg */
+
+/* Surfaces and borders */
+@define-color surface                #525252; /* base03 – muted text, outer borders */
+@define-color border                 #393939; /* base02 – darker inner borders */
+
+/* Foregrounds */
+@define-color foreground             #FFFFFF; /* base06 – main foreground */
+@define-color foreground-secondary   #DDE1E6; /* base04 – secondary fg */
+@define-color foreground-muted       #F2F4F8; /* base05 – muted fg */
+
+/* Primary accent blues */
+@define-color blue                   #33B1FF; /* base0B – primary accent */
+@define-color light-blue             #78A9FF; /* base09 – lighter blue */
+@define-color sky                    #82CFFF; /* base0F – special */
+
+/* Semantic colors */
+@define-color green                  #42BE65; /* base0D – success, charging */
+@define-color red                    #EE5396; /* base0A – warning, errors */
+@define-color pink                   #FF7EB6; /* base0C – warning highlight */
+@define-color purple                 #BE95FF; /* base0E – keywords, tags */
+@define-color teal                   #3DDBD9; /* base08 – error dim */
+@define-color cyan                   #08BDBA; /* base07 – error highlight */
+
+@define-color gray                   #525252; /* base03 – muted gray */
+@define-color overlay                rgba(0, 0, 0, 0.7); /* Shadow overlay */
+
+/*------------------------------
+ *    General
+ *-----------------------------*/
+
+* {
+    font-family: FontAwesome, Jetbrains Mono Nerd;
+    font-size: 13px;
+}
+
+#waybar > box {
+    box-shadow: 5px 5px 5px 5px @overlay;
+}
+
+window#waybar {
+    background-color: @background;
+    color: @foreground;
+    border-top: 3px solid @surface;
+    border-bottom: 3px solid @surface;
+}
+
+/*------------------------------
+ *    Modules - Shared (outer borders)
+ *-----------------------------*/
+
+.modules-right {
+    border-top: 3px solid @surface;
+    border-right: 3px solid @surface;
+    border-bottom: 3px solid @surface;
+}
+
+.modules-center {
+    border-top: 3px solid @surface;
+    border-bottom: 3px solid @surface;
+}
+
+.modules-left {
+    background-color: @background;
+    border-top: 3px solid @surface;
+    border-left: 3px solid @surface;
+    border-bottom: 3px solid @surface;
+}
+
+tooltip {
+    background-color: @background-secondary;
+    border: 2px solid @surface;
+}
+
+/*------------------------------
+ *    Modules - Left
+ *-----------------------------*/
+
+#workspaces {
+    background-color: @background;
+    color: @foreground;
+    padding-left: 1em;
+}
+
+#workspaces button {
+    color: @foreground;
+    padding: 0 6px;
+}
+
+#workspaces button:hover {
+    color: @green;
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    transition: none;
+}
+
+#workspaces button.active {
+    color: @blue;
+}
+
+#workspaces button.active:hover {
+    color: @green;
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    transition: none;
+}
+
+#clock {
+    background-color: @background;
+    padding-right: 1.5em;
+    padding-left: 1.5em;
+    border-right: 3px solid @purple;
+}
+
+/*------------------------------
+ *    Modules - Right
+ *-----------------------------*/
+
+/* First Section */
+#battery {
+    color: @foreground;
+    padding-left: 0.5em;
+    padding-right: 1.5em;
+    min-width: 37px;
+}
+
+#battery.critical {
+    color: @red;
+}
+
+#battery.charging,
+#battery.plugged {
+    color: @green;
+}
+
+#memory {
+    padding-left: 1em;
+    padding-right: 0.5em;
+    min-width: 37px;
+}
+
+#memory.critical {
+    color: @red;
+}
+
+#cpu {
+    padding-right: 0.5em;
+    padding-left: 1.5em;
+    min-width: 37px;
+    border-left: 3px solid @pink;
+}
+
+#cpu.critical {
+    color: @red;
+}
+
+/* Second Section */
+#network {
+    padding-right: 1.5em;
+    padding-left: 1em;
+}
+
+#network.disconnected {
+    color: @red;
+}
+
+#bluetooth {
+    padding-right: 0.5em;
+    padding-left: 1em;
+}
+
+#bluetooth.disabled {
+    color: @gray;
+}
+
+#wireplumber {
+    background-color: @background;
+    padding-right: 1em;
+    padding-left: 1.5em;
+}
+
+#wireplumber.muted {
+    color: @gray;
+}
+
+/* Third Section */
+#custom-spotify {
+    padding-right: 1.5em;
+    padding-left: 1.5em;
+    border-right: 3px solid @teal;
+}
+
+#custom-spotify.custom-spotify-playing {
+    color: @green;
+}
+
+#custom-spotify.custom-spotify-paused {
+    color: @gray;
+}
+

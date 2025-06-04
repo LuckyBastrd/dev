@@ -22,6 +22,7 @@ export PATH="$N_PREFIX/bin:$PATH"
 export DENO_INSTALL="$HOME/.deno"
 
 export GIT_EDITOR=$VIM
+export EDITOR=$VIM
 export DEV_ENV_HOME="$HOME/personal/dev"
 
 # Rust (cargo)
@@ -35,6 +36,9 @@ dev_env() {
 # Tmux session shortcut
 bindkey -s ^f "tmux-sessionizer\n"
 
+# chezmoi edit and apply function shortcut
+bindkey -s '\ed' "cedit\n"
+
 # Utility functions
 catr() {
     tail -n "+$1" $3 | head -n "$(($2 - $1 + 1))"
@@ -42,13 +46,6 @@ catr() {
 
 cat1Line() {
     cat $1 | tr -d "\n"
-}
-
-# chezmoi edit and apply function
-cedit() {
-     local file
-     file=$(chezmoi managed | fzf --prompt="Edit dotfile: " --height=40%) || return
-     chezmoi edit --apply "$file"
 }
 
 # Path management helpers

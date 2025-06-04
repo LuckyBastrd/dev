@@ -1,5 +1,6 @@
 README.md
-submodules/
+.local/tmux-sessionizer/
+dev-commit
 
 {{ if eq .chezmoi.os "linux" }}
 
@@ -7,4 +8,6 @@ submodules/
 
 {{ if eq .chezmoi.os "darwin" }}
 .config/hypr/
+.config/waybar/
+.config/rofi/
 {{ end }}

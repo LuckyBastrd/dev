@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+CHEZMOI_DIR="/home/r/.local/share/chezmoi"
+
+echo "Starting commit & push process for chezmoi and submodules..."
+cd "$CHEZMOI_DIR" || { echo "Failed to change directory to $CHEZMOI_DIR"; exit 1; }
+
+echo "Step 1: Processing submodules..."
+git submodule foreach '
+  echo "--------------------------------------------------"
+  echo "Processing submodule: $name"
+  git add .
+  if git diff --cached --quiet; then
+    echo "No changes to commit in $name"
+  else
+    git commit -m "automated dev commit"
+    git push || echo "Push failed for $name"
+  fi
+'
+
+echo "--------------------------------------------------"
+echo "Step 2: Processing main chezmoi repo..."
+git add .
+if git diff --cached --quiet; then
+  echo "No changes to commit in main repo"
+else
+  git commit -m "automated dev commit"
+  git push || echo "Push failed for main repo"
+fi
+
+echo "Process completed."
