@@ -2,7 +2,7 @@ README.md
 .local/tmux-sessionizer/
 ansible/
 .config/nvim/
-dev-commit
+scripts/
 
 {{ if eq .chezmoi.os "linux" }}
 

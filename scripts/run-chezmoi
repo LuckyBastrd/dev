@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+# Function to check if ChezMoi is installed
+is_chezmoi_installed() {
+    if command -v chezmoi &> /dev/null; then
+        return 0  # ChezMoi is installed
+    else
+        return 1  # ChezMoi is not installed
+    fi
+}
+
+# Install ChezMoi on Arch Linux
+install_on_arch() {
+    echo -e "\n======================================"
+    echo -e " Installing ChezMoi on Arch Linux..."
+    echo -e "======================================\n"
+    sudo pacman -S --noconfirm chezmoi
+}
+
+# Install ChezMoi on macOS
+install_on_mac() {
+    echo -e "\n======================================"
+    echo -e " Installing ChezMoi on macOS..."
+    echo -e "======================================\n"
+    brew install chezmoi
+}
+
+# Function to ask for user confirmation on applying dotfiles
+ask_for_apply() {
+    read -p "Do you want to apply the dotfiles now? (y/n): " answer
+    case "${answer}" in
+        [Yy]*)
+            echo -e "\nApplying dotfiles..."
+            chezmoi apply
+            ;;
+        [Nn]*)
+            echo -e "\nDotfiles not applied. You can apply them later by running: 'chezmoi apply'."
+            ;;
+        *)
+            echo -e "[ERROR]: Invalid input. Please answer with 'y' or 'n'."
+            ask_for_apply  # Recurse until a valid answer is given
+            ;;
+    esac
+}
+
+# Main script logic for OS detection and installation
+echo -e "\n==========================="
+echo -e " Running ChezMoi Setup..."
+echo -e "==========================="
+OS="$(uname -s)"
+case "${OS}" in
+    Linux*)
+        if [ -f /etc/arch-release ]; then
+            if ! is_chezmoi_installed; then
+                install_on_arch
+            else
+                echo -e "ChezMoi is already installed. Skipping installation."
+            fi
+        else
+            echo -e "[ERROR]: Unsupported Linux distribution"
+            exit 1
+        fi
+        ;;
+    Darwin*)
+        if ! is_chezmoi_installed; then
+            install_on_mac
+        else
+            echo -e "ChezMoi is already installed. Skipping installation."
+        fi
+        ;;
+    *)
+        echo -e "[ERROR]: Unsupported operating system: ${OS}"
+        exit 1
+        ;;
+esac
+
+# Initialize ChezMoi with the dotfiles repository
+echo -e "\nInitializing ChezMoi with the dotfiles repository..."
+chezmoi init --source ~/personal/dev
+
+# Ask if user wants to apply the dotfiles now
+ask_for_apply

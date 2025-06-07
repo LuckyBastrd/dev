@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+# Function to check if Ansible is installed
+is_ansible_installed() {
+    if command -v ansible &> /dev/null; then
+        return 0  # Ansible is installed
+    else
+        return 1  # Ansible is not installed
+    fi
+}
+
+install_on_arch() {
+    echo -e "\n======================================"
+    echo -e " Installing Ansible on Arch Linux..."
+    echo -e "======================================\n"
+    sudo pacman -S --noconfirm ansible
+}
+
+install_on_mac() {
+    echo -e "\n======================================"
+    echo -e " Installing Ansible on macOS..."
+    echo -e "======================================\n"
+    brew install ansible
+}
+
+# Function to run the Arch playbook
+run_arch_playbook() {
+    echo -e "\n======================================"
+    echo -e " Running Arch Playbook..."
+    echo -e "======================================\n"
+
+    # Change to the project root directory
+    SCRIPT_DIR=$(dirname "$(realpath "$0")")
+    PROJECT_DIR=$(dirname "$SCRIPT_DIR")  # Navigate to project root
+    
+    echo "Changing to project root directory: $PROJECT_DIR"
+    cd "$PROJECT_DIR" || { echo -e "[ERROR]: Failed to change directory to $PROJECT_DIR!"; exit 1; }
+
+    # Run the playbook if the file exists
+    if [ -f "./ansible/run" ]; then
+        echo -e "Running playbook for Arch...\n"
+        ./ansible/run arch
+    else
+        echo -e "\n[ERROR]: Ansible playbook file './ansible/run' not found!"
+        exit 1
+    fi
+}
+
+# Function to run the macOS playbook
+run_mac_playbook() {
+    echo -e "\n======================================"
+    echo -e " Running macOS Playbook..."
+    echo -e "======================================\n"
+
+    # Change to the project root directory
+    SCRIPT_DIR=$(dirname "$(realpath "$0")")
+    PROJECT_DIR=$(dirname "$SCRIPT_DIR")  # Navigate to project root
+    
+    echo "Changing to project root directory: $PROJECT_DIR"
+    cd "$PROJECT_DIR" || { echo -e "[ERROR]: Failed to change directory to $PROJECT_DIR!"; exit 1; }
+
+    # Run the playbook if the file exists
+    if [ -f "./ansible/run" ]; then
+        echo -e "Running playbook for macOS...\n"
+        ./ansible/run mac
+    else
+        echo -e "\n[ERROR]: Ansible playbook file './ansible/run' not found!"
+        exit 1
+    fi
+}
+
+OS="$(uname -s)"
+case "${OS}" in
+    Linux*)
+        if [ -f /etc/arch-release ]; then
+            if ! is_ansible_installed; then
+                install_on_arch
+            else
+                echo -e "Ansible is already installed. Skipping installation."
+            fi
+            # Run the Arch playbook after installation
+            run_arch_playbook
+        else
+            echo -e "[ERROR]: Unsupported Linux distribution"
+            exit 1
+        fi
+        ;;
+    Darwin*)
+        if ! is_ansible_installed; then
+            install_on_mac
+        else
+            echo -e "Ansible is already installed. Skipping installation."
+        fi
+        # Run the macOS playbook after installation
+        run_mac_playbook
+        ;;
+    *)
+        echo -e "[ERROR]: Unsupported operating system: ${OS}"
+        exit 1
+        ;;
+esac

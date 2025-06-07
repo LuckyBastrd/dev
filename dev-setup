@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+# Function to check if a script exists in the scripts directory
+script_exists() {
+    if [ -f "$1" ]; then
+        return 0  # Script exists
+    else
+        echo "Error: Script '$1' not found!"
+        return 1  # Script doesn't exist
+    fi
+}
+
+# Function to ask for user confirmation
+ask_for_confirmation() {
+    local message="$1"
+    while true; do
+        read -p "$message (y/n): " choice
+        case "$choice" in
+            [Yy]*)
+                return 0  # User confirmed (yes)
+                ;;
+            [Nn]*)
+                return 1  # User declined (no)
+                ;;
+            *)
+                echo "Invalid input. Please enter 'y' or 'n'."
+                ;;
+        esac
+    done
+}
+
+# Run Ansible setup
+run_ansible() {
+    echo "=========================="
+    echo "Running Ansible Setup..."
+    echo "=========================="
+    
+    script_path="./scripts/run-ansible"  # Updated path for the script
+
+    if script_exists "$script_path"; then
+        if ask_for_confirmation "Do you want to run the Ansible setup?"; then
+            "$script_path"  # Run the script
+        else
+            echo "Skipping Ansible setup."
+        fi
+    else
+        echo "Skipping Ansible setup. '$script_path' not found."
+    fi
+}
+
+# Run ChezMoi setup
+run_chezmoi() {
+    echo "=========================="
+    echo "Running ChezMoi Setup..."
+    echo "=========================="
+    
+    script_path="./scripts/run-chezmoi"  # Updated path for the script
+
+    if script_exists "$script_path"; then
+        if ask_for_confirmation "Do you want to run the ChezMoi setup?"; then
+            "$script_path"  # Run the script
+        else
+            echo "Skipping ChezMoi setup."
+        fi
+    else
+        echo "Skipping ChezMoi setup. '$script_path' not found."
+    fi
+}
+
+# Main process
+echo "=========================="
+echo "Dev Setup!"
+echo "=========================="
+
+# Run Ansible and ChezMoi in sequence, asking for user confirmation
+run_ansible
+run_chezmoi
+
+echo "=========================="
+echo "Setup Complete!"
+echo "=========================="
