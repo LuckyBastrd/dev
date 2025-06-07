@@ -1,14 +1,11 @@
 # How to run
 
 ~~~bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply git@github.com:LuckyBastrd/.dotfiles.git
+# Clone the repo and run the dev-setup script(Using SSH)
+mkdir -p ~/personal/dev && git clone git@github.com:LuckyBastrd/.dotfiles.git ~/personal/dev && cd ~/personal/dev && ./dev-setup
 
-# Change to chezmoi source directory
-chezmoi cd
+or
 
-# Initialize and update git submodules
-git submodule update --init --recursive
-
-# Apply changes again to ensure submodules are linked properly
-chezmoi apply
+# Clone the repo and run the dev-setup script(Using HTTPS)
+mkdir -p ~/personal/dev && git clone https://github.com/LuckyBastrd/dev.git ~/personal/dev && cd ~/personal/dev && ./dev-setup
 ~~~
