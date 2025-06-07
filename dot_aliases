@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+alias tmux="$(which tmux) -2"
+alias vim='nvim'
+alias tutup='shutdown now'

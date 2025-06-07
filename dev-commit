@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CHEZMOI_DIR="/home/r/.local/share/chezmoi"
+CHEZMOI_DIR=$(chezmoi source-path)
 
 echo "Starting commit & push process for chezmoi and submodules..."
 cd "$CHEZMOI_DIR" || { echo "Failed to change directory to $CHEZMOI_DIR"; exit 1; }
@@ -14,8 +14,17 @@ git submodule foreach '
     echo "No changes to commit in $name"
   else
     git commit -m "automated dev commit"
-    git push || echo "Push failed for $name"
   fi
+
+  echo "Pulling latest changes in $name..."
+  git pull --rebase
+  if [ $? -ne 0 ]; then
+    echo "Warning: pull failed or conflicts detected in $name, please resolve manually."
+    exit 1
+  fi
+
+  echo "Pushing changes in $name..."
+  git push || echo "Push failed for $name"
 '
 
 echo "--------------------------------------------------"
@@ -25,7 +34,16 @@ if git diff --cached --quiet; then
   echo "No changes to commit in main repo"
 else
   git commit -m "automated dev commit"
-  git push || echo "Push failed for main repo"
 fi
+
+echo "Pulling latest changes in main repo..."
+git pull --rebase
+if [ $? -ne 0 ]; then
+  echo "Warning: pull failed or conflicts detected in main repo, please resolve manually."
+  exit 1
+fi
+
+echo "Pushing changes in main repo..."
+git push || echo "Push failed for main repo"
 
 echo "Process completed."
