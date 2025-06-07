@@ -3,47 +3,78 @@
 CHEZMOI_DIR=$(chezmoi source-path)
 
 echo "Starting commit & push process for chezmoi and submodules..."
-cd "$CHEZMOI_DIR" || { echo "Failed to change directory to $CHEZMOI_DIR"; exit 1; }
+cd "$CHEZMOI_DIR" || { echo "❌ Failed to change directory to $CHEZMOI_DIR"; exit 1; }
 
 echo "Step 1: Processing submodules..."
 git submodule foreach '
   echo "--------------------------------------------------"
-  echo "Processing submodule: $name"
-  git add .
-  if git diff --cached --quiet; then
-    echo "No changes to commit in $name"
-  else
-    git commit -m "automated dev commit"
+  echo "📦 Processing submodule: $name"
+
+  # Check for unstaged/uncommitted changes and stash if needed
+  STASHED=false
+  if ! git diff --quiet || ! git diff --cached --quiet; then
+    echo "🧺 Stashing local changes in $name before rebase..."
+    git stash push -m "Auto-stash before rebase"
+    STASHED=true
   fi
 
-  echo "Pulling latest changes in $name..."
-  git pull --rebase
-  if [ $? -ne 0 ]; then
-    echo "Warning: pull failed or conflicts detected in $name, please resolve manually."
+  echo "🔄 Pulling latest changes in $name (rebase)..."
+  git fetch origin
+  if ! git rebase origin/$(git rev-parse --abbrev-ref HEAD); then
+    echo "⚠️ Rebase failed in $name — please resolve manually."
     exit 1
   fi
 
-  echo "Pushing changes in $name..."
-  git push || echo "Push failed for $name"
+  if [ "$STASHED" = true ]; then
+    echo "🔁 Reapplying stashed changes in $name..."
+    git stash pop || echo "⚠️ Failed to pop stash in $name, please fix manually."
+  fi
+
+  echo "🔍 Checking for changes in $name..."
+  if ! git diff --quiet || ! git diff --cached --quiet; then
+    git add .
+    git commit -m "automated dev commit"
+    echo "✅ Committed changes in $name"
+  else
+    echo "✅ No changes to commit in $name"
+  fi
+
+  echo "⬆️ Pushing changes in $name..."
+  git push || echo "❌ Push failed for $name"
 '
 
 echo "--------------------------------------------------"
 echo "Step 2: Processing main chezmoi repo..."
-git add .
-if git diff --cached --quiet; then
-  echo "No changes to commit in main repo"
-else
-  git commit -m "automated dev commit"
+
+STASHED=false
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "🧺 Stashing local changes in main repo before rebase..."
+  git stash push -m "Auto-stash before rebase"
+  STASHED=true
 fi
 
-echo "Pulling latest changes in main repo..."
-git pull --rebase
-if [ $? -ne 0 ]; then
-  echo "Warning: pull failed or conflicts detected in main repo, please resolve manually."
+echo "🔄 Pulling latest changes in main repo (rebase)..."
+git fetch origin
+if ! git rebase origin/$(git rev-parse --abbrev-ref HEAD); then
+  echo "⚠️ Rebase failed in main repo — please resolve manually."
   exit 1
 fi
 
-echo "Pushing changes in main repo..."
-git push || echo "Push failed for main repo"
+if [ "$STASHED" = true ]; then
+  echo "🔁 Reapplying stashed changes in main repo..."
+  git stash pop || echo "⚠️ Failed to pop stash in main repo, please fix manually."
+fi
 
-echo "Process completed."
+echo "🔍 Checking for changes in main repo..."
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  git add .
+  git commit -m "automated dev commit"
+  echo "✅ Committed changes in main repo"
+else
+  echo "✅ No changes to commit in main repo"
+fi
+
+echo "⬆️ Pushing changes in main repo..."
+git push || echo "❌ Push failed for main repo"
+
+echo "✅ All done!"

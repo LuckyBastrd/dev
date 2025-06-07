@@ -1,5 +1,6 @@
 README.md
 .local/tmux-sessionizer/
+ansible/
 dev-commit
 
 {{ if eq .chezmoi.os "linux" }}
