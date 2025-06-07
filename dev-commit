@@ -10,6 +10,14 @@ git submodule foreach '
   echo "--------------------------------------------------"
   echo "📦 Processing submodule: $name"
 
+  # Check for unfinished rebase
+  if [ -d .git/rebase-apply ] || [ -d .git/rebase-merge ]; then
+    echo "⚠️ Unfinished rebase detected in $name."
+    echo "Please run '\''git rebase --continue'\'' in $name after resolving conflicts."
+    echo "Then rerun this script."
+    exit 1
+  fi
+
   # Check for unstaged/uncommitted changes and stash if needed
   STASHED=false
   if ! git diff --quiet || ! git diff --cached --quiet; then
@@ -45,6 +53,14 @@ git submodule foreach '
 
 echo "--------------------------------------------------"
 echo "Step 2: Processing main chezmoi repo..."
+
+# Check for unfinished rebase in main repo
+if [ -d .git/rebase-apply ] || [ -d .git/rebase-merge ]; then
+  echo "⚠️ Unfinished rebase detected in main repo."
+  echo "Please run 'git rebase --continue' after resolving conflicts."
+  echo "Then rerun this script."
+  exit 1
+fi
 
 STASHED=false
 if ! git diff --quiet || ! git diff --cached --quiet; then
