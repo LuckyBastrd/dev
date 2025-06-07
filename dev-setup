@@ -29,6 +29,48 @@ ask_for_confirmation() {
     done
 }
 
+# Function to pull Git submodules and checkout the default branch
+git_update_submodules() {
+    echo "====================================="
+    echo "Pulling Git submodules..."
+    echo "====================================="
+    
+    # Check if this is a git repository
+    if [ -d ".git" ]; then
+        # Update submodules
+        git submodule update --init --recursive
+        if [ $? -eq 0 ]; then
+            echo "Submodules pulled successfully!"
+        else
+            echo "Error pulling submodules."
+            exit 1
+        fi
+
+        # Checkout the default branch (usually 'main' or 'master') for the superproject
+        default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+        git checkout "$default_branch"
+        if [ $? -eq 0 ]; then
+            echo "Checked out the default branch '$default_branch'."
+        else
+            echo "Error checking out the default branch."
+            exit 1
+        fi
+
+        # Checkout the default branch for each submodule
+        git submodule foreach '
+            # Check if the submodule is in a detached HEAD state
+            if [ "$(git symbolic-ref --short HEAD 2>/dev/null)" == "" ]; then
+                echo "⚠️ Detached HEAD state detected in $name. Checking out master branch..."
+                git checkout master || { echo "❌ Failed to checkout master in $name"; exit 1; }
+            fi
+        '
+
+    else
+        echo "Error: Not a git repository."
+        exit 1
+    fi
+}
+
 # Run Ansible setup
 run_ansible() {
     echo "=========================="
@@ -71,6 +113,9 @@ run_chezmoi() {
 echo "=========================="
 echo "Dev Setup!"
 echo "=========================="
+
+# Pull submodules and checkout default branch
+git_update_submodules
 
 # Run Ansible and ChezMoi in sequence, asking for user confirmation
 run_ansible
