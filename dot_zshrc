@@ -85,6 +85,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
+
 #   export EDITOR='vim'
 # else
 #   export EDITOR='mvim'
@@ -98,7 +99,19 @@ if [ -f ~/.aliases ]; then
   source ~/.aliases
 fi
 
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# Tmux session shortcut
+bindkey -s ^f "tmux-sessionizer\n"
+
+# chezmoi shortcut
+bindkey -s '\ed' "cedit\n"
+
+# Load SSH keys using pinentry-curses
+export GPG_TTY=$(tty)
+export PINENTRY_USER_DATA="USE_CURSES=1"
+
+load_ssh_keys_crossplatform
+
 # source .zsh_profile
 # source ~/.zsh_profile
-
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
