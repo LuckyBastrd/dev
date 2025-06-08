@@ -1,1 +1,8 @@
 sourceDir = "{{ .chezmoi.sourceDir }}"
+
+# Prompt for the email address
+{{- $git-email := promptStringOnce . "git-email" "Enter your git-email address" -}}
+
+# Data section
+[data]
+git-email = {{ $git-email | quote }}
