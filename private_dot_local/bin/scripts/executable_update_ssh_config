@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Arguments passed from main script
+KEY_NAME="$1"
+COMMENT="$2"
+KEY_PATH="$3"
+SSH_USER="${4:-git}"  # Optional, default to 'git'
+
+SSH_CONFIG="$HOME/.ssh/config"
+HOST_ALIAS="${KEY_NAME}"
+HOSTNAME=""
+
+# Infer hostname from comment/email if possible
+if [[ "$COMMENT" == *@* ]]; then
+  HOSTNAME="${COMMENT##*@}"
+else
+  HOSTNAME="$KEY_NAME"
+fi
+
+mkdir -p ~/.ssh
+touch "$SSH_CONFIG"
+chmod 600 "$SSH_CONFIG"
+
+# Only append if not already configured
+if ! grep -q "IdentityFile $KEY_PATH" "$SSH_CONFIG" 2>/dev/null; then
+  {
+    echo ""
+    echo "Host $HOST_ALIAS"
+    echo "  HostName $HOSTNAME"
+    echo "  User $SSH_USER"
+    echo "  IdentityFile $KEY_PATH"
+    echo "  IdentitiesOnly yes"
+  } >> "$SSH_CONFIG"
+
+  echo "🛠️ SSH config updated with Host '$HOST_ALIAS' for '$HOSTNAME'"
+else
+  echo "ℹ️ SSH config already contains entry for '$KEY_PATH'. Skipping."
+fi

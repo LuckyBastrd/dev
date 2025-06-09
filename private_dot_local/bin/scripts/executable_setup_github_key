@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+KEY_PATH="$1"
+
+echo
+echo "📋 Your new public key:"
+cat "${KEY_PATH}.pub"
+
+echo
+echo "👉 Copy the above key and add it to your GitHub account:"
+echo "   https://github.com/settings/ssh/new"
+
+# Open GitHub SSH keys page (Linux/macOS)
+if command -v xdg-open &>/dev/null; then
+  xdg-open "https://github.com/settings/ssh/new" >/dev/null 2>&1 &
+elif command -v open &>/dev/null; then
+  open "https://github.com/settings/ssh/new" >/dev/null 2>&1 &
+fi

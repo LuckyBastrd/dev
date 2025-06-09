@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+# load_ssh_keys.sh: Decrypt stored SSH key passphrases and load all matching keys into the ssh-agent.
+
+PASSFILE="$HOME/.ssh/ssh_passphrases.tmp.gpg"
+
+if [[ ! -f "$PASSFILE" ]]; then
+  echo "❌ Passphrase file not found: $PASSFILE"
+  exit 1
+fi
+
+if [[ -z "${SSH_AUTH_SOCK:-}" || ! -S "$SSH_AUTH_SOCK" ]]; then
+  echo "❌ SSH agent not running. Start it first."
+  exit 1
+fi
+
+# Decrypt the file (GPG prompts once for passphrase)
+DECRYPTED=$(gpg -dq "$PASSFILE")
+if [[ -z "$DECRYPTED" ]]; then
+  echo "❌ Failed to decrypt or file is empty."
+  exit 1
+fi
+
+# Loop and add each key/passphrase pair
+while IFS='=' read -r key_name passphrase; do
+  # Skip empty lines or missing key_name/passphrase
+  [[ -z "$key_name" || -z "$passphrase" ]] && continue
+
+  KEY_PATH="$HOME/.ssh/id_ed25519_${key_name}"
+  if [[ -f "$KEY_PATH" ]]; then
+    echo "🔑 Adding $key_name..."
+    expect <<EOF
+      spawn ssh-add "$KEY_PATH"
+      expect {
+        "Enter passphrase for*" {
+          sleep 0.2
+          send "$passphrase\r"
+          exp_continue
+        }
+        eof
+      }
+EOF
+  else
+    echo "⚠️ Key file not found: $KEY_PATH"
+  fi
+done <<< "$DECRYPTED"
+
+echo "✅ All available SSH keys loaded."

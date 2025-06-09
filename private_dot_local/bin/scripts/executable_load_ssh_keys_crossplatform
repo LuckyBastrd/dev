@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Paths
+LOAD_SCRIPT="$HOME/bin/scripts/load_ssh_keys"
+SSH_DIR="$HOME/.ssh"
+
+# Check if keys already loaded (simple heuristic: at least 1 key loaded)
+if ssh-add -l >/dev/null 2>&1 && [[ $(ssh-add -l | wc -l) -gt 0 ]]; then
+  # echo "🔐 SSH keys already loaded"
+  exit 0
+fi
+
+OS="$(uname -s)"
+
+case "$OS" in
+  Linux)
+    echo "🐧 Detected Linux: using your GPG decrypt and load script."
+    if [[ -x "$LOAD_SCRIPT" ]]; then
+      "$LOAD_SCRIPT"
+    else
+      echo "⚠️ Could not find your load_ssh_keys.sh script at $LOAD_SCRIPT"
+      exit 1
+    fi
+    ;;
+
+  Darwin)
+    echo "🍎 Detected macOS."
+
+    # Check if SSH keys are in Keychain (macOS)
+    # If keys exist, just skip or load with Keychain helper
+    if ssh-add -l >/dev/null 2>&1 && [[ $(ssh-add -l | wc -l) -gt 0 ]]; then
+      echo "🔐 SSH keys already loaded from Keychain."
+      exit 0
+    fi
+
+    # Load all private keys from ~/.ssh starting with id_ed25519_ or id_rsa_
+    for key in "$SSH_DIR"/id_ed25519_* "$SSH_DIR"/id_rsa_*; do
+      [[ -f "$key" ]] || continue
+      echo "🔑 Adding $key to ssh-agent with macOS Keychain integration..."
+      # Add to ssh-agent and save in keychain
+      ssh-add -K "$key"
+    done
+    ;;
+
+  *)
+    echo "⚠️ Unsupported OS: $OS"
+    exit 1
+    ;;
+esac
+
+echo "✅ SSH keys loaded."
+read -rp "Press Enter to continue..."
+clear

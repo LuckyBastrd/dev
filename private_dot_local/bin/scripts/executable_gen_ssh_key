@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+
+# gen_ssh_key: Generate a new SSH key and optionally add it to the agent.
+# Usage:
+#   gen_ssh_key <key_name> <comment/email> [--no-passphrase | --auto-passphrase]
+# Examples:
+#   gen_ssh_key github github@github.com
+#   gen_ssh_key server server@example.com --no-passphrase
+#   gen_ssh_key work work@example.com --auto-passphrase
+
+set -euo pipefail
+
+show_usage() {
+  cat <<EOF
+
+🔧 Usage: $0 <key_name> <comment/email> [--no-passphrase | --auto-passphrase]
+
+📌 Examples:
+  $0 github github@github.com
+  $0 server server@example.com --no-passphrase
+  $0 work work@example.com --auto-passphrase
+
+This will create:
+  ~/.ssh/id_ed25519_<key_name>       (private key)
+  ~/.ssh/id_ed25519_<key_name>.pub   (public key)
+
+Flags:
+  --no-passphrase     Skip passphrase prompt (not recommended)
+  --auto-passphrase   Generate strong random passphrase and save it encrypted in ~/.ssh/ssh_passphrases.tmp.gpg
+
+EOF
+}
+
+auto_add_key_with_expect() {
+  local key_path="$1"
+  local passphrase="$2"
+
+  expect <<EOF
+    log_user 1
+    spawn ssh-add "$key_path"
+    expect {
+      "Enter passphrase for*" {
+        sleep 0.2
+        send "$passphrase\r"
+        exp_continue
+      }
+      "Bad passphrase*" {
+        exit 1
+      }
+      eof
+    }
+EOF
+}
+
+# === Parse Arguments ===
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || $# -lt 2 ]]; then
+  show_usage
+  exit 1
+fi
+
+KEY_NAME="$1"
+COMMENT="$2"
+KEY_PATH="$HOME/.ssh/id_ed25519_${KEY_NAME}"
+PASSFILE="$HOME/.ssh/ssh_passphrases.tmp.gpg"
+NO_PASSPHRASE=false
+AUTO_PASS=false
+
+if [[ "${3:-}" == "--no-passphrase" ]]; then
+  NO_PASSPHRASE=true
+elif [[ "${3:-}" == "--auto-passphrase" ]]; then
+  AUTO_PASS=true
+fi
+
+# === Pre-checks ===
+if [[ -f "$KEY_PATH" ]]; then
+  echo "✅ SSH key already exists at $KEY_PATH"
+  exit 0
+fi
+
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+# === Key Generation ===
+if [[ "$NO_PASSPHRASE" == true ]]; then
+  ssh-keygen -t ed25519 -C "$COMMENT" -f "$KEY_PATH" -N ""
+elif [[ "$AUTO_PASS" == true ]]; then
+  PASSPHRASE=$(openssl rand -base64 24)
+
+  # FIX: Initialize GPG_PASS to avoid unbound variable error under 'set -u'
+  GPG_PASS=""
+  EXISTING_CONTENT=""
+  if [[ -f "$PASSFILE" ]]; then
+    echo "🔐 Encrypted passphrase file already exists at $PASSFILE."
+    read -rsp "Enter passphrase to decrypt existing file (leave empty to overwrite): " GPG_PASS
+    echo
+    if [[ -n "$GPG_PASS" ]]; then
+      EXISTING_CONTENT=$(echo "$GPG_PASS" | gpg -d --batch --passphrase-fd 0 "$PASSFILE" 2>/dev/null || true)
+      if [[ -z "$EXISTING_CONTENT" ]]; then
+        echo "⚠️ Could not decrypt existing file with given passphrase. Aborting."
+        exit 1
+      fi
+    else
+      echo "⚠️ Overwriting existing file."
+      EXISTING_CONTENT=""
+    fi
+  fi
+
+  # Append new key/passphrase
+  UPDATED_CONTENT="${EXISTING_CONTENT}"$'\n'"${KEY_NAME}=${PASSPHRASE}"
+
+  # Encrypt and save updated content
+  if [[ -n "$GPG_PASS" ]]; then
+    echo "$UPDATED_CONTENT" | gpg -c --batch --passphrase "$GPG_PASS" --yes -o "$PASSFILE"
+  else
+    # No passphrase provided for encryption; create new encrypted file with empty passphrase
+    echo "$UPDATED_CONTENT" | gpg -c --batch --yes -o "$PASSFILE"
+  fi
+  chmod 600 "$PASSFILE"
+
+  ssh-keygen -t ed25519 -C "$COMMENT" -f "$KEY_PATH" -N "$PASSPHRASE"
+else
+  ssh-keygen -t ed25519 -C "$COMMENT" -f "$KEY_PATH"
+fi
+
+chmod 600 "$KEY_PATH"
+chmod 644 "$KEY_PATH.pub"
+
+echo "✅ SSH key saved:"
+echo "  - Private: $KEY_PATH"
+echo "  - Public : $KEY_PATH.pub"
+
+# === Add to SSH Agent if available ===
+if [[ -S "${SSH_AUTH_SOCK:-}" ]]; then
+  if $AUTO_PASS; then
+    if auto_add_key_with_expect "$KEY_PATH" "$PASSPHRASE"; then
+      echo "🧠 Key added to ssh-agent (auto passphrase)."
+    else
+      echo "⚠️ Failed to add SSH key using expect."
+    fi
+  else
+    ssh-add "$KEY_PATH"
+    echo "🧠 Key added to ssh-agent."
+  fi
+else
+  echo "⚠️ ssh-agent not running or SSH_AUTH_SOCK not set. Skipping ssh-add."
+fi
+
+
+# === Update SSH Config ===
+./update_ssh_config "$KEY_NAME" "$COMMENT" "$KEY_PATH" "${SSH_USER:-git}"
+
+# === Setup For GitHub Key ===
+if [[ "$KEY_NAME" == "github" ]]; then
+  ./path/to/show_github_key.sh "$KEY_PATH"
+fi
