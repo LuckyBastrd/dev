@@ -1,4 +1,12 @@
+# Tmux
 alias tmux="$(which tmux) -2"
+alias tmux-sessionizer="$HOME/.local/bin/tmux-sessionizer/tmux-sessionizer"
+
+# Editor
 alias vim='nvim'
+
+# Utils
 alias cat='bat'
+
+# System
 alias tutup='shutdown now'

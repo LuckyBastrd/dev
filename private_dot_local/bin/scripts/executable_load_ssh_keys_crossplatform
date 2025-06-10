@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Paths
-LOAD_SCRIPT="$HOME/bin/scripts/load_ssh_keys"
+LOAD_SCRIPT="$HOME/.local/bin/scripts/load_ssh_keys"
 SSH_DIR="$HOME/.ssh"
 
 # Check if keys already loaded (simple heuristic: at least 1 key loaded)
@@ -20,7 +20,7 @@ case "$OS" in
     if [[ -x "$LOAD_SCRIPT" ]]; then
       "$LOAD_SCRIPT"
     else
-      echo "⚠️ Could not find your load_ssh_keys.sh script at $LOAD_SCRIPT"
+      echo "⚠️ Could not find your load_ssh_keys script at $LOAD_SCRIPT"
       exit 1
     fi
     ;;
