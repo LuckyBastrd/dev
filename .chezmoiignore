@@ -1,8 +1,10 @@
 README.md
 ansible/
 .config/nvim/
-dev-setup
-scripts/
+.local/bin/tmux-sessionizer
+dev-env
+dev-commit
+env-scripts/
 
 {{ if eq .chezmoi.os "linux" }}
 

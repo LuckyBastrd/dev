@@ -1,6 +1,5 @@
 # Tmux
 alias tmux="$(which tmux) -2"
-alias tmux-sessionizer="$HOME/.local/bin/tmux-sessionizer/tmux-sessionizer"
 
 # Editor
 alias vim='nvim'
@@ -9,4 +8,5 @@ alias vim='nvim'
 alias cat='bat'
 
 # System
+alias pathlist="echo \$PATH | tr ':' '\n'"
 alias tutup='shutdown now'

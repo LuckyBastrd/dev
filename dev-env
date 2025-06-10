@@ -77,7 +77,7 @@ run_ansible() {
     echo "Running Ansible Setup..."
     echo "=========================="
     
-    script_path="./scripts/run-ansible"  # Updated path for the script
+    script_path="./env-scripts/run-ansible"  # Updated path for the script
 
     if script_exists "$script_path"; then
         if ask_for_confirmation "Do you want to run the Ansible setup?"; then
@@ -96,7 +96,7 @@ run_chezmoi() {
     echo "Running ChezMoi Setup..."
     echo "=========================="
     
-    script_path="./scripts/run-chezmoi"  # Updated path for the script
+    script_path="./env-scripts/run-chezmoi"  # Updated path for the script
 
     if script_exists "$script_path"; then
         if ask_for_confirmation "Do you want to run the ChezMoi setup?"; then
