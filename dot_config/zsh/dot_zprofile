@@ -1,0 +1,47 @@
+addToPath() {
+    if [[ ":$PATH:" != *":$1:"* ]]; then
+        export PATH="$PATH:$1"
+    fi
+}
+
+addToPathFront() {
+    if [[ ! -z "$2" ]] || [[ "$PATH" != *"$1"* ]]; then
+        export PATH=$1:$PATH
+    fi
+}
+
+
+
+# XDG Base Directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+export XDG_CACHE_HOME="$HOME/.cache"
+
+# Zsh Environment Setup
+[ -d "$XDG_STATE_HOME"/zsh ] || mkdir -p "$XDG_STATE_HOME"/zsh
+[ -d "$XDG_CACHE_HOME"/zsh ] || mkdir -p "$XDG_CACHE_HOME"/zsh
+
+export HISTFILE="$XDG_STATE_HOME/zsh/history"
+export ZSH_COMPDUMP="$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"
+
+# Set SSH_AUTH_SOCK for systemd ssh-agent
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+
+# Editors
+VIM="nvim"
+export EDITOR="$VIM"
+export GIT_EDITOR="$VIM"
+
+# Go Environment
+export GOPATH="$XDG_DATA_HOME/go"
+export GOMODCACHE="$XDG_CACHE_HOME/go/mod"
+
+# Update PATH
+addToPath "$HOME/.local/bin"
+addToPath "$HOME/.local/bin/scripts"
+addToPath "$GOPATH/bin"
+
+# Add Path To Front
+addToPathFront $HOME/.local/bin
+addToPathFront $HOME/.local/bin/scripts
