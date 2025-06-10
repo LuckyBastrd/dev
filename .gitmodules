@@ -4,3 +4,6 @@
 [submodule "ansible"]
 	path = ansible
 	url = git@github.com:LuckyBastrd/ansible.git
+[submodule "private_dot_local/bin/tmux-sessionizer"]
+	path = private_dot_local/bin/tmux-sessionizer
+	url = git@github.com:LuckyBastrd/tmux-sessionizer.git
