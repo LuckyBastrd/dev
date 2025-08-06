@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# dev-env: 🚀 Entry point to set up your full development environment
+
+# Function: Check if a script exists
+script_exists() {
+    if [ -f "$1" ]; then
+        return 0
+    else
+        echo "❌ Error: Script '$1' not found!"
+        return 1
+    fi
+}
+
+# Function: Ask user to confirm an action
+ask_for_confirmation() {
+    local message="$1"
+    while true; do
+        read -p "$message (y/n): " choice
+        case "$choice" in
+            [Yy]*) return 0 ;;
+            [Nn]*) return 1 ;;
+            *) echo "Invalid input. Please enter 'y' or 'n'." ;;
+        esac
+    done
+}
+
+# Function: Update git submodules and check out default branches
+git_update_submodules() {
+    echo "====================================="
+    echo "🔄 Updating Git Submodules..."
+    echo "====================================="
+
+    if [ ! -d .git ]; then
+        echo "❌ Error: Not a git repository."
+        exit 1
+    fi
+
+    git submodule update --init --recursive
+
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to pull submodules."
+        exit 1
+    fi
+
+    # Checkout default branch in root repo
+    default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+    if [ -n "$default_branch" ]; then
+        git checkout "$default_branch" 2>/dev/null
+        echo "📌 Checked out dev to '$default_branch'"
+    fi
+
+    # Checkout branches in each submodule if detached
+    git submodule foreach '
+        current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+        if [ -z "$current_branch" ]; then
+            echo "⚠️  Detached HEAD in $name. Attempting to check out main/master..."
+            git checkout main 2>/dev/null || git checkout master 2>/dev/null || echo "❌ Failed to checkout a branch in $name"
+        fi
+    '
+}
+
+# Run Ansible
+run_ansible() {
+    echo "====================================="
+    echo "🚀 Running Ansible Setup"
+    echo "====================================="
+
+    script_path="./dev-ansible/run_ansible"
+
+    if script_exists "$script_path"; then
+        if ask_for_confirmation "Run Ansible setup?"; then
+            bash "$script_path"
+        else
+            echo "⏭️ Skipping Ansible setup."
+        fi
+    fi
+}
+
+# Run Chezmoi
+run_chezmoi() {
+    echo "====================================="
+    echo "🚀 Running Chezmoi Setup"
+    echo "====================================="
+
+    script_path="./dev-dotfiles/run_chezmoi"
+
+    if script_exists "$script_path"; then
+        if ask_for_confirmation "Run Chezmoi setup?"; then
+            bash "$script_path"
+        else
+            echo "⏭️ Skipping Chezmoi setup."
+        fi
+    fi
+}
+
+# ========================
+# 🚀 Main process
+# ========================
+echo
+echo "==============================="
+echo "🧠 Dev Environment Setup Start"
+echo "==============================="
+
+git_update_submodules
+run_ansible
+run_chezmoi
+
+echo
+echo "==============================="
+echo "✅ Dev Environment Ready!"
+echo "==============================="

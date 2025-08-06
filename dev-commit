@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+set -e
+
+echo "🧠 Starting commit & push process for submodules and dev root repo..."
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔁 Step 1: Processing submodules..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+git submodule foreach '
+  echo ""
+  echo "--------------------------------------------------"
+  echo "📦 Processing submodule: $name"
+
+  # Check for unfinished rebase
+  if [ -d .git/rebase-apply ] || [ -d .git/rebase-merge ]; then
+    echo "⚠️  Unfinished rebase detected in $name."
+    echo "➡️  Run '\''git rebase --continue'\'' in $name after resolving conflicts."
+    exit 1
+  fi
+
+  # Check for unstaged/uncommitted changes and stash if needed
+  STASHED=false
+  if ! git diff --quiet || ! git diff --cached --quiet; then
+    echo "🧺 Stashing local changes in $name..."
+    git stash push -m \"Auto-stash before rebase\"
+    STASHED=true
+  fi
+
+  echo "🔄 Rebasing from origin in $name..."
+  git fetch origin
+  if ! git rebase origin/$(git rev-parse --abbrev-ref HEAD); then
+    echo "❌ Rebase failed in $name — resolve manually."
+    exit 1
+  fi
+
+  if [ \"$STASHED\" = true ]; then
+    echo "🔁 Reapplying stashed changes in $name..."
+    git stash pop || echo "⚠️  Failed to pop stash in $name — resolve manually."
+  fi
+
+  echo "🔍 Checking for changes in $name..."
+  if ! git diff --quiet || ! git diff --cached --quiet || [ -n \"$(git ls-files --others --exclude-standard)\" ]; then
+    git add -A
+    git commit -m \"🔁 automated dev commit\"
+    echo "✅ Committed changes in $name"
+  else
+    echo "✅ No changes to commit in $name"
+  fi
+
+  echo "⬆️  Pushing changes in $name..."
+  git push || echo "❌ Push failed for $name"
+'
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🧠 Step 2: Processing root repo: dev/"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT" || exit 1
+
+if [ -d .git/rebase-apply ] || [ -d .git/rebase-merge ]; then
+  echo "⚠️  Unfinished rebase detected in dev/"
+  echo "➡️  Run 'git rebase --continue' after resolving conflicts."
+  exit 1
+fi
+
+STASHED=false
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "🧺 Stashing local changes in dev/..."
+  git stash push -m "Auto-stash before rebase"
+  STASHED=true
+fi
+
+echo "🔄 Rebasing from origin in dev/..."
+git fetch origin
+if ! git rebase origin/$(git rev-parse --abbrev-ref HEAD); then
+  echo "❌ Rebase failed in dev/ — resolve manually."
+  exit 1
+fi
+
+if [ "$STASHED" = true ]; then
+  echo "🔁 Reapplying stashed changes in dev/..."
+  git stash pop || echo "⚠️  Failed to pop stash in dev/ — resolve manually."
+fi
+
+echo "🔍 Checking for changes in dev/..."
+if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+  git add -A
+  git commit -m "🔁 automated dev commit"
+  echo "✅ Committed changes in dev/"
+else
+  echo "✅ No changes to commit in dev/"
+fi
+
+echo "⬆️  Pushing changes in dev/..."
+git push || echo "❌ Push failed for dev/"
+
+echo ""
+echo "🎉 All done!"
