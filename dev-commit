@@ -2,6 +2,11 @@
 
 set -e
 
+AUTO_YES=false
+if [[ "$1" == "--yes" ]]; then
+  AUTO_YES=true
+fi
+
 echo "🧠 Starting commit & push process for submodules and dev root repo..."
 
 echo ""
@@ -9,54 +14,72 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "🔁 Step 1: Processing submodules..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-git submodule foreach '
+process_submodule() {
+  local submodule_path="$1"
+  cd "$submodule_path"
+
   echo ""
   echo "--------------------------------------------------"
-  echo "📦 Processing submodule: $name"
+  echo "📦 Processing submodule: $submodule_path"
   echo "--------------------------------------------------"
 
-  # Check for unfinished rebase
   if [ -d .git/rebase-apply ] || [ -d .git/rebase-merge ]; then
-    echo "⚠️  Unfinished rebase detected in $name."
-    echo "➡️  Run '\''git rebase --continue'\'' in $name after resolving conflicts."
+    echo "⚠️  Unfinished rebase detected in $submodule_path."
+    echo "➡️  Run 'git rebase --continue' after resolving conflicts."
     exit 1
   fi
 
   STASHED=false
   if ! git diff --quiet || ! git diff --cached --quiet; then
-    echo "🧺 Stashing local changes in $name..."
-    git stash push -m \"Auto-stash before rebase\"
+    echo "🧺 Stashing local changes in $submodule_path..."
+    git stash push -m "Auto-stash before rebase"
     STASHED=true
   fi
 
-  echo "🔄 Rebasing from origin in $name..."
+  echo "🔄 Rebasing from origin in $submodule_path..."
   git fetch origin
   if ! git rebase origin/$(git rev-parse --abbrev-ref HEAD); then
-    echo "❌ Rebase failed in $name — resolve manually."
+    echo "❌ Rebase failed in $submodule_path — resolve manually."
     exit 1
   fi
 
-  if [ \"$STASHED\" = true ]; then
-    echo "🔁 Reapplying stashed changes in $name..."
-    git stash pop || echo "⚠️  Failed to pop stash in $name — resolve manually."
+  if [ "$STASHED" = true ]; then
+    echo "🔁 Reapplying stashed changes in $submodule_path..."
+    git stash pop || echo "⚠️  Failed to pop stash in $submodule_path — resolve manually."
   fi
 
-  echo "🔍 Checking for changes in $name..."
-  if ! git diff --quiet || ! git diff --cached --quiet || [ -n \"$(git ls-files --others --exclude-standard)\" ]; then
+  echo "🔍 Checking for changes in $submodule_path..."
+  if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
     git add -A
-    echo "📄 Files staged for commit:"
-    git --no-pager diff --cached --name-status
+    git commit -m "automated dev commit"
+    echo "✅ Committed changes in $submodule_path"
 
-    git commit -m \"🔁 automated dev commit\"
-    echo "✅ Committed changes in $name"
+    if $AUTO_YES; then
+      echo "⬆️  Auto-pushing changes in $submodule_path..."
+      git push || echo "❌ Push failed for $submodule_path"
+    else
+      read -p "❓ Push & keep commit in $submodule_path? (y/n): " confirm
+      if [ "$confirm" = "y" ]; then
+        echo "⬆️  Pushing changes in $submodule_path..."
+        git push || echo "❌ Push failed for $submodule_path"
+      else
+        echo "❌ Skipping push. Resetting last commit in $submodule_path..."
+        git reset --soft HEAD~1
+      fi
+    fi
   else
-    echo "✅ No changes to commit in $name"
+    echo "✅ No changes to commit in $submodule_path"
   fi
 
-  echo "⬆️  Pushing changes in $name..."
-  git push || echo "❌ Push failed for $name"
   echo "--------------------------------------------------"
-'
+  cd - > /dev/null
+}
+
+# Get submodule paths
+SUBMODULES=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')
+for sub in $SUBMODULES; do
+  process_submodule "$sub"
+done
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -94,17 +117,25 @@ fi
 echo "🔍 Checking for changes in dev/..."
 if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
   git add -A
-  echo "📄 Files staged for commit:"
-  git --no-pager diff --cached --name-status
-
   git commit -m "automated dev commit"
   echo "✅ Committed changes in dev/"
+
+  if $AUTO_YES; then
+    echo "⬆️  Auto-pushing changes in dev/..."
+    git push || echo "❌ Push failed for dev/"
+  else
+    read -p "❓ Push & keep commit in dev/? (y/n): " confirm
+    if [ "$confirm" = "y" ]; then
+      echo "⬆️  Pushing changes in dev/..."
+      git push || echo "❌ Push failed for dev/"
+    else
+      echo "❌ Skipping push. Resetting last commit in dev/..."
+      git reset --soft HEAD~1
+    fi
+  fi
 else
   echo "✅ No changes to commit in dev/"
 fi
-
-echo "⬆️  Pushing changes in dev/..."
-git push || echo "❌ Push failed for dev/"
 
 echo ""
 echo "🎉 All done!"
