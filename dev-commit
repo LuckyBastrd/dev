@@ -13,6 +13,7 @@ git submodule foreach '
   echo ""
   echo "--------------------------------------------------"
   echo "📦 Processing submodule: $name"
+  echo "--------------------------------------------------"
 
   # Check for unfinished rebase
   if [ -d .git/rebase-apply ] || [ -d .git/rebase-merge ]; then
@@ -21,7 +22,6 @@ git submodule foreach '
     exit 1
   fi
 
-  # Check for unstaged/uncommitted changes and stash if needed
   STASHED=false
   if ! git diff --quiet || ! git diff --cached --quiet; then
     echo "🧺 Stashing local changes in $name..."
@@ -44,6 +44,9 @@ git submodule foreach '
   echo "🔍 Checking for changes in $name..."
   if ! git diff --quiet || ! git diff --cached --quiet || [ -n \"$(git ls-files --others --exclude-standard)\" ]; then
     git add -A
+    echo "📄 Files staged for commit:"
+    git --no-pager diff --cached --name-status
+
     git commit -m \"🔁 automated dev commit\"
     echo "✅ Committed changes in $name"
   else
@@ -52,6 +55,7 @@ git submodule foreach '
 
   echo "⬆️  Pushing changes in $name..."
   git push || echo "❌ Push failed for $name"
+  echo "--------------------------------------------------"
 '
 
 echo ""
@@ -90,7 +94,10 @@ fi
 echo "🔍 Checking for changes in dev/..."
 if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
   git add -A
-  git commit -m "🔁 automated dev commit"
+  echo "📄 Files staged for commit:"
+  git --no-pager diff --cached --name-status
+
+  git commit -m "automated dev commit"
   echo "✅ Committed changes in dev/"
 else
   echo "✅ No changes to commit in dev/"
