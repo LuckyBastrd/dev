@@ -1,0 +1,9 @@
+[submodule "dev-ansible"]
+	path = dev-ansible
+	url = git@github.com:LuckyBastrd/dev-ansbile.git
+[submodule "dev-dotfiles"]
+	path = dev-dotfiles
+	url = git@github.com:LuckyBastrd/dev-dotfiles.git
+[submodule "dev-submodules/tmux-sessionizer"]
+	path = dev-submodules/tmux-sessionizer
+	url = git@github.com:LuckyBastrd/tmux-sessionizer.git
