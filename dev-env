@@ -78,20 +78,34 @@ git_update_submodules() {
         exit 1
     fi
 
-    git submodule update --init --recursive || { echo "❌ Failed to pull submodules."; exit 1; }
+    echo "📥 Initializing and updating submodules recursively..."
+    git submodule update --init --recursive || {
+        echo "❌ Failed to pull submodules."
+        exit 1
+    }
 
     local default_branch
     default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+
     if [ -n "$default_branch" ]; then
-        git checkout "$default_branch" 2>/dev/null && echo "📌 Checked out dev to '$default_branch'"
+        git checkout "$default_branch" &>/dev/null && \
+        echo "📌 Main repo checked out to '$default_branch'"
     fi
 
+    echo
+    echo "🔁 Checking submodules for detached HEADs and fixing them if needed..."
     git submodule foreach '
+        echo "📂 Entering $name"
         current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
         if [ -z "$current_branch" ]; then
             echo "⚠️  Detached HEAD in $name. Attempting to check out main/master..."
-            git checkout main 2>/dev/null || git checkout master 2>/dev/null || echo "❌ Failed to checkout a branch in $name"
+            git checkout main 2>/dev/null || \
+            git checkout master 2>/dev/null || \
+            echo "❌ Failed to checkout a branch in $name"
+        else
+            echo "✅ On branch $current_branch"
         fi
+        echo
     '
 }
 
