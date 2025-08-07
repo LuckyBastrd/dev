@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 
+# ===================================================================
 # dev-env: 🚀 Entry point to set up your full development environment
+# ===================================================================
 
+# --------------------------------------
 # Function: Check if a script exists
+# --------------------------------------
 script_exists() {
-    if [ -f "$1" ]; then
-        return 0
-    else
-        echo "❌ Error: Script '$1' not found!"
-        return 1
-    fi
+    [[ -f "$1" ]] && return 0 || { echo "❌ Error: Script '$1' not found!"; return 1; }
 }
 
+# --------------------------------------
 # Function: Ask user to confirm an action
+# --------------------------------------
 ask_for_confirmation() {
     local message="$1"
     while true; do
@@ -25,8 +26,49 @@ ask_for_confirmation() {
     done
 }
 
-# Function: Update git submodules and check out default branches
+# --------------------------------------
+# Function: Detect OS
+# --------------------------------------
+detect_os() {
+    case "$(uname -s)" in
+        Linux*)   echo "Linux" ;;
+        Darwin*)  echo "Mac" ;;
+        *)        echo "UNKNOWN" ;;
+    esac
+}
+
+# --------------------------------------
+# Function: Install Homebrew (Mac only)
+# --------------------------------------
+bootstrap_brew() {
+    if [[ "$1" != "Mac" ]]; then return; fi
+
+    echo
+    echo "====================================="
+    echo "🍺 Ensuring Homebrew is Installed"
+    echo "====================================="
+
+    if ! command -v brew &>/dev/null; then
+        echo "⚠️ Homebrew is not installed."
+        if ask_for_confirmation "Do you want to install Homebrew?"; then
+            echo "📦 Installing Homebrew..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        else
+            echo "❌ Homebrew is required to install Ansible and Chezmoi. Exiting..."
+            exit 1
+        fi
+    else
+        echo "✅ Homebrew already installed."
+    fi
+}
+
+# --------------------------------------
+# Function: Update git submodules
+# --------------------------------------
 git_update_submodules() {
+    echo
     echo "====================================="
     echo "🔄 Updating Git Submodules..."
     echo "====================================="
@@ -36,21 +78,14 @@ git_update_submodules() {
         exit 1
     fi
 
-    git submodule update --init --recursive
+    git submodule update --init --recursive || { echo "❌ Failed to pull submodules."; exit 1; }
 
-    if [ $? -ne 0 ]; then
-        echo "❌ Failed to pull submodules."
-        exit 1
-    fi
-
-    # Checkout default branch in root repo
+    local default_branch
     default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
     if [ -n "$default_branch" ]; then
-        git checkout "$default_branch" 2>/dev/null
-        echo "📌 Checked out dev to '$default_branch'"
+        git checkout "$default_branch" 2>/dev/null && echo "📌 Checked out dev to '$default_branch'"
     fi
 
-    # Checkout branches in each submodule if detached
     git submodule foreach '
         current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
         if [ -z "$current_branch" ]; then
@@ -60,14 +95,20 @@ git_update_submodules() {
     '
 }
 
-# Run Ansible
+# --------------------------------------
+# Function: Run Ansible
+# --------------------------------------
 run_ansible() {
+    echo
     echo "====================================="
-    echo "🚀 Running Ansible Setup"
+    echo "🚀 Running Dev Ansible Setup"
     echo "====================================="
 
-    script_path="./dev-ansible/run_ansible"
+    if ! command -v ansible &>/dev/null; then
+        echo "⚠️ Ansible is not installed. It will be installed via Homebrew when script runs."
+    fi
 
+    local script_path="./dev-ansible/run-dev-ansible"
     if script_exists "$script_path"; then
         if ask_for_confirmation "Run Ansible setup?"; then
             bash "$script_path"
@@ -77,14 +118,20 @@ run_ansible() {
     fi
 }
 
-# Run Chezmoi
+# --------------------------------------
+# Function: Run Chezmoi
+# --------------------------------------
 run_chezmoi() {
+    echo
     echo "====================================="
-    echo "🚀 Running Chezmoi Setup"
+    echo "🚀 Running Dev Dotfiles Setup"
     echo "====================================="
 
-    script_path="./dev-dotfiles/run_chezmoi"
+    if ! command -v chezmoi &>/dev/null; then
+        echo "⚠️ Chezmoi is not installed. It will be installed via Homebrew when script runs."
+    fi
 
+    local script_path="./dev-dotfiles/run-dev-dotfiles"
     if script_exists "$script_path"; then
         if ask_for_confirmation "Run Chezmoi setup?"; then
             bash "$script_path"
@@ -94,19 +141,34 @@ run_chezmoi() {
     fi
 }
 
-# ========================
-# 🚀 Main process
-# ========================
-echo
-echo "==============================="
-echo "🧠 Dev Environment Setup Start"
-echo "==============================="
+# --------------------------------------
+# Main Function
+# --------------------------------------
+main() {
+    echo
+    echo "==============================="
+    echo "🧠 Dev Environment Setup Start"
+    echo "==============================="
 
-git_update_submodules
-run_ansible
-run_chezmoi
+    local os_type
+    os_type=$(detect_os)
+    echo "📦 Detected OS: $os_type"
 
-echo
-echo "==============================="
-echo "✅ Dev Environment Ready!"
-echo "==============================="
+    if [[ "$os_type" == "Mac" ]]; then
+        bootstrap_brew "$os_type"
+    else
+        echo "⚠️ Skipping Homebrew bootstrap — not macOS."
+    fi
+
+    git_update_submodules
+    run_ansible
+    run_chezmoi
+
+    echo
+    echo "==============================="
+    echo "✅ Dev Environment Ready!"
+    echo "==============================="
+}
+
+# Invoke main
+main
