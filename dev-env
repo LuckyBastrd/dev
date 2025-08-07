@@ -77,8 +77,13 @@ git_update_submodules() {
         echo "❌ Error: Not a git repository."
         exit 1
     fi
-
+    
+    echo
+    echo "------------------------------------------------------"
     echo "📥 Initializing and updating submodules recursively..."
+    echo "------------------------------------------------------"
+    echo
+
     git submodule update --init --recursive || {
         echo "❌ Failed to pull submodules."
         exit 1
@@ -93,7 +98,11 @@ git_update_submodules() {
     fi
 
     echo
+    echo "----------------------------------------------------------------------"
     echo "🔁 Checking submodules for detached HEADs and fixing them if needed..."
+    echo "----------------------------------------------------------------------"
+    echo
+
     git submodule foreach '
         echo "📂 Entering $name"
         current_branch=$(git symbolic-ref --short HEAD 2>/dev/null)
