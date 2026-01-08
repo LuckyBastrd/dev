@@ -1,0 +1,18 @@
+# Ignore OS junk
+.DS_Store
+Thumbs.db
+
+# Ignore Python cache, if any
+__pycache__/
+*.pyc
+
+# Ignore secrets if using chezmoi secrets
+chezmoi-encrypted-*
+
+# Ignore personal notes
+notes.txt
+
+# Ignore temporary files
+*.swp
+*.swo
+*.bak
