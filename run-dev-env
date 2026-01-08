@@ -4,7 +4,8 @@ set -e
 # --------------------------------------------------
 # Resolve source directory (repo root)
 # --------------------------------------------------
-CHEZMOI_SOURCE="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHEZMOI_SOURCE="$SCRIPT_DIR"
 
 # --------------------------------------------------
 # Utilities
