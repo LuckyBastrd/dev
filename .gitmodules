@@ -1,3 +1,6 @@
 [submodule "dot_config/nvim"]
 	path = dot_config/nvim
 	url = git@github.com:LuckyBastrd/init.lua.git
+[submodule "private_dot_local/bin/scripts/tmux-sessionizer"]
+	path = private_dot_local/bin/scripts/tmux-sessionizer
+	url = git@github.com:LuckyBastrd/tmux-sessionizer.git
