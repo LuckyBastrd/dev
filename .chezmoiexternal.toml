@@ -1,0 +1,4 @@
+[".local/bin/scripts/tmux-sessionizer"]
+    type = "git-repo"
+    url = "git@github.com:LuckyBastrd/tmux-sessionizer.git"
+    refreshPeriod = "168h"
