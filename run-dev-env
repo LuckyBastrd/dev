@@ -14,6 +14,53 @@ has_cmd() {
 }
 
 # --------------------------------------------------
+# Update git submodules
+# --------------------------------------------------
+update_submodules() {
+  echo "🔄 Updating git submodules..."
+  
+  if [[ ! -d "$CHEZMOI_SOURCE/.git" ]]; then
+    echo "ℹ️  Not a git repository, skipping submodules"
+    return 0
+  fi
+  
+  if [[ ! -f "$CHEZMOI_SOURCE/.gitmodules" ]]; then
+    echo "ℹ️  No submodules found"
+    return 0
+  fi
+  
+  cd "$CHEZMOI_SOURCE"
+  
+  echo "📥 Updating submodules to tracked commits..."
+  if ! git submodule update --init --recursive; then
+    echo "❌ Failed to update submodules"
+    return 1
+  fi
+  
+  echo "✅ Submodules updated"
+}
+
+# --------------------------------------------------
+# Prompt to update submodules
+# --------------------------------------------------
+prompt_update_submodules() {
+  # Check if submodules exist first
+  if [[ ! -f "$CHEZMOI_SOURCE/.gitmodules" ]]; then
+    return 0
+  fi
+  
+  read -r -p "Update git submodules? (y/N): " answer
+  case "$answer" in
+    [Yy]*)
+      update_submodules || echo "⚠️  Submodule update had issues, continuing..."
+      ;;
+    *)
+      echo "ℹ️  Skipped submodule update"
+      ;;
+  esac
+}
+
+# --------------------------------------------------
 # Install Homebrew (macOS only)
 # --------------------------------------------------
 install_brew() {
@@ -21,10 +68,8 @@ install_brew() {
     echo "Error: Homebrew install attempted on non-macOS system"
     exit 1
   }
-
   echo "🍺 Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
   if [[ -x /opt/homebrew/bin/brew ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
   elif [[ -x /usr/local/bin/brew ]]; then
@@ -37,9 +82,7 @@ install_brew() {
 # --------------------------------------------------
 install_chezmoi() {
   local os_name="$1"
-
   echo "📦 Installing chezmoi..."
-
   case "$os_name" in
     arch)
       sudo pacman -S --noconfirm chezmoi
@@ -74,14 +117,65 @@ prompt_apply() {
 # Main
 # --------------------------------------------------
 main() {
-  local os_name apply_mode="prompt"
-
+  local os_name apply_mode="prompt" update_subs="prompt"
+  
   # Parse args
-  case "${1:-}" in
-    --apply)    apply_mode="yes" ;;
-    --no-apply) apply_mode="no" ;;
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --apply)
+        apply_mode="yes"
+        shift
+        ;;
+      --no-apply)
+        apply_mode="no"
+        shift
+        ;;
+      --update-submodules|--update-subs)
+        update_subs="yes"
+        shift
+        ;;
+      --no-update-subs)
+        update_subs="no"
+        shift
+        ;;
+      --help|-h)
+        echo "Usage: $0 [OPTIONS]"
+        echo ""
+        echo "Options:"
+        echo "  --apply              Apply dotfiles without prompting"
+        echo "  --no-apply           Skip applying dotfiles"
+        echo "  --update-submodules  Update git submodules without prompting"
+        echo "  --no-update-subs     Skip updating submodules"
+        echo "  --help, -h           Show this help message"
+        echo ""
+        echo "Examples:"
+        echo "  $0                          # Interactive mode (asks for everything)"
+        echo "  $0 --apply                  # Auto-apply, prompt for submodules"
+        echo "  $0 --update-subs --apply    # Auto everything"
+        echo "  $0 --no-update-subs         # Skip submodules, prompt for apply"
+        exit 0
+        ;;
+      *)
+        echo "Unknown option: $1"
+        echo "Use --help for usage information"
+        exit 1
+        ;;
+    esac
+  done
+  
+  # Update submodules based on mode
+  case "$update_subs" in
+    yes)
+      update_submodules || echo "⚠️  Submodule update had issues, continuing..."
+      ;;
+    no)
+      echo "ℹ️  Skipping submodule update (--no-update-subs)"
+      ;;
+    prompt)
+      prompt_update_submodules
+      ;;
   esac
-
+  
   # OS detection
   case "$(uname -s)" in
     Linux*)
@@ -99,17 +193,17 @@ main() {
       exit 1
       ;;
   esac
-
+  
   # macOS: ensure Homebrew
   if [[ "$os_name" == "mac" ]] && ! has_cmd brew; then
     install_brew
   fi
-
+  
   # Ensure chezmoi
   if ! has_cmd chezmoi; then
     install_chezmoi "$os_name"
   fi
-
+  
   # Init only if needed
   if chezmoi source-path >/dev/null 2>&1; then
     echo "✅ Chezmoi already initialized"
@@ -118,7 +212,7 @@ main() {
     echo "   $CHEZMOI_SOURCE"
     chezmoi init --source "$CHEZMOI_SOURCE"
   fi
-
+  
   # Apply behavior
   case "$apply_mode" in
     yes)
