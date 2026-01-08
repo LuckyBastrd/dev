@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-pushd ~/personal/submodules/tmux-sessionizer/
+pushd ~/personal/dev/dot_config/nvim
 git add .
 git commit -m 'automated dev commit'
 git push

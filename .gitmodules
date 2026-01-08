@@ -1,3 +1,3 @@
-[submodule "submodules/tmux-sessionizer"]
-	path = submodules/tmux-sessionizer
-	url = git@github.com:LuckyBastrd/tmux-sessionizer.git
+[submodule "dot_config/nvim"]
+	path = dot_config/nvim
+	url = git@github.com:LuckyBastrd/init.lua.git
