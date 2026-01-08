@@ -1,0 +1,25 @@
+# Ghostty color theme based on the oxocarbon color scheme
+# Source: https://github.com/nyoom-engineering/base16-oxocarbon
+
+palette = 0=#262626
+palette = 1=#EE5396
+palette = 2=#42BE65
+palette = 3=#FFE97B
+palette = 4=#33B1FF
+palette = 5=#FF7EB6
+palette = 6=#3DDBD9
+palette = 7=#DDE1E6
+palette = 8=#393939
+palette = 9=#EE5396
+palette = 10=#42BE65
+palette = 11=#FFE97B
+palette = 12=#33B1FF
+palette = 13=#FF7EB6
+palette = 14=#3DDBD9
+palette = 15=#FFFFFF
+
+background = #161616
+foreground = #FFFFFF
+cursor-color = #FFFFFF
+selection-background = #393939
+selection-foreground = #000000
