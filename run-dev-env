@@ -6,6 +6,7 @@ set -e
 # --------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CHEZMOI_SOURCE="$SCRIPT_DIR"
+CURRENT_SOURCE=$(chezmoi source-path 2>/dev/null || echo "")
 
 # --------------------------------------------------
 # Utilities
@@ -206,12 +207,11 @@ main() {
   fi
   
   # Init only if needed
-  if chezmoi source-path >/dev/null 2>&1; then
-    echo "✅ Chezmoi already initialized"
-  else
-    echo "📁 Initializing chezmoi from:"
-    echo "   $CHEZMOI_SOURCE"
+  if [[ "$CURRENT_SOURCE" != "$CHEZMOI_SOURCE" ]]; then
+    echo "📁 Initializing chezmoi from: $CHEZMOI_SOURCE"
     chezmoi init --source "$CHEZMOI_SOURCE"
+  else
+    echo "✅ chezmoi already configured for this source directory"
   fi
   
   # Apply behavior
