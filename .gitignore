@@ -16,3 +16,7 @@ notes.txt
 *.swp
 *.swo
 *.bak
+
+# Ignore External Folder
+external/nvim
+external/tmux-sessionizer

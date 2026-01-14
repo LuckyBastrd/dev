@@ -1,9 +1,9 @@
-[".config/nvim"]
+["personal/dev/external/nvim"]
     type = "git-repo"
     url = "git@github.com:LuckyBastrd/init.lua.git"
     refreshPeriod = "24h"
 
-[".local/bin/scripts/tmux-sessionizer"]
+["personal/dev/external/tmux-sessionizer"]
     type = "git-repo"
     url = "git@github.com:LuckyBastrd/tmux-sessionizer.git"
     refreshPeriod = "168h"
