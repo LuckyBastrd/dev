@@ -1,0 +1,271 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+OS="$(uname -s)"
+
+# =========================
+# Helpers
+# =========================
+die() {
+  echo "❌ $*" >&2
+  exit 1
+}
+
+info() {
+  echo "➜ $*"
+}
+
+warn() {
+  echo "⚠️  $*" >&2
+}
+
+command -v ssh-keygen >/dev/null || die "ssh-keygen not found"
+command -v ssh-add >/dev/null || die "ssh-add not found"
+
+ask_yes_no() {
+  local prompt="$1"
+  local var_ref="$2"
+
+  while true; do
+    read -n 1 -rp "$prompt [y/n]: " input
+    case "$input" in
+      y|Y|yes|Yes|YES) echo; printf -v "$var_ref" "true"; break ;;
+      n|N|no|No|NO)    echo; printf -v "$var_ref" "false"; break ;;
+      *)
+        if [[ -z "$input" ]]; then
+           echo -ne "\033[1A"
+        fi
+
+        echo -ne "\r\033[2K$prompt [y/n]: $input ❌ Please answer 'y' or 'n'."
+
+        sleep 1
+        read -t 1 -n 10000 discard || true
+        echo -ne "\r\033[2K"
+        ;;
+    esac
+  done
+}
+
+ask_input() {
+  local prompt="$1"
+  local var_ref="$2"
+  local regex="${3:-.+}"
+  local err_msg="${4:-Invalid input.}"
+
+  while true; do
+    read -rp "$prompt: " input
+    if [[ "$input" =~ $regex ]]; then
+      printf -v "$var_ref" "%s" "$input"
+      break # Langsung break tanpa echo tambahan
+    else
+      echo -ne "\033[1A\033[2K$prompt: $input ❌ $err_msg"
+      sleep 1
+      read -t 1 -n 10000 discard || true
+      echo -ne "\r\033[2K"
+    fi
+  done
+}
+
+ask_choice() {
+  local prompt="$1"
+  local var_ref="$2"
+  local default_val="$3"
+  shift 3
+  local options=("$@")
+
+  echo "$prompt:"
+  local i=1
+  for opt in "${options[@]}"; do
+    if [[ "$opt" == "$default_val" ]]; then
+      echo "  $i) $opt (default)"
+    else
+      echo "  $i) $opt"
+    fi
+    ((i++))
+  done
+
+  if [[ -n "$default_val" ]]; then
+    echo "  (press Enter for default)"
+  fi
+
+  while true; do
+    read -rp "  > " input
+
+    if [[ -z "$input" && -n "$default_val" ]]; then
+      printf -v "$var_ref" "%s" "$default_val"
+      echo -ne "\033[1A\033[2K"
+      echo "  > Selected: $default_val"
+      break
+    fi
+
+    if [[ "$input" =~ ^[1-9][0-9]*$ ]]; then
+      local idx=$((input - 1))
+      if [[ -n "${options[$idx]:-}" ]]; then
+        printf -v "$var_ref" "%s" "${options[$idx]}"
+        break
+      fi
+    fi
+
+    echo -ne "\033[1A\033[2K  > $input ❌ Invalid option."
+    sleep 1
+    read -t 1 -n 10000 discard || true
+    echo -ne "\r\033[2K"
+  done
+}
+
+key_in_agent() {
+  local pub_key="${KEY_PATH}.pub"
+  if [[ ! -f "$pub_key" ]]; then return 1; fi
+
+  local fingerprint
+  fingerprint=$(ssh-keygen -lf "$pub_key" | awk '{print $2}')
+  ssh-add -l 2>/dev/null | grep -Fq "$fingerprint"
+}
+
+# =========================
+# Pre-flight Checks
+# =========================
+if [[ "$OS" != "Darwin" && -z "${SSH_AUTH_SOCK:-}" ]]; then
+  warn "ssh-agent is NOT detected."
+  ask_yes_no "Proceed anyway?" PROCEED
+
+  if [[ "$PROCEED" == "false" ]]; then
+    die "Aborted. No keys generated."
+  fi
+fi
+
+# =========================
+# Main Logic
+# =========================
+echo
+echo "======================="
+echo "🔐 SSH Key Generator"
+echo "======================="
+
+ask_input "Key name(e.g. github, prod, etc)" KEY_NAME "^[a-zA-Z0-9_-]+$" "Invalid name."
+ask_input "Comment/Email(e.g. github@github.com, etc)" COMMENT "^.+$" "Cannot be empty."
+ask_yes_no "Use a passphrase?" USE_PASSPHRASE
+echo
+
+KEY_PATH="$HOME/.ssh/id_ed25519_${KEY_NAME}"
+
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+if [[ -f "$KEY_PATH" ]]; then
+  info "Key already exists: $KEY_PATH"
+else
+  if [[ "$USE_PASSPHRASE" == false ]]; then
+    ssh-keygen -t ed25519 -C "$COMMENT" -f "$KEY_PATH" -N "" || die "ssh-keygen failed"
+  else
+    ssh-keygen -t ed25519 -C "$COMMENT" -f "$KEY_PATH" || die "ssh-keygen failed"
+  fi
+
+  chmod 600 "$KEY_PATH"
+  chmod 644 "$KEY_PATH.pub"
+fi
+
+# =========================
+# Handle Agent
+# =========================
+if [[ "$OS" == "Darwin" ]]; then
+  if ! key_in_agent; then
+    if ssh-add --apple-use-keychain "$KEY_PATH" 2>/dev/null; then
+       info "Identity added to Keychain"
+    else
+       ssh-add -K "$KEY_PATH" || warn "Failed to add to Keychain"
+    fi
+  else
+    info "Key already loaded"
+  fi
+else
+  if [[ -n "${SSH_AUTH_SOCK:-}" ]]; then
+    if ! key_in_agent; then
+      ssh-add "$KEY_PATH" || warn "Failed to add key"
+    else
+      info "Key already loaded"
+    fi
+  fi
+fi
+
+
+
+# =========================
+# Handle Config
+# =========================
+echo
+echo "======================="
+echo "🛠️  SSH Config Setup"
+echo "======================="
+
+ask_input "Host alias (e.g. github, etc)" HOST_ALIAS "^.+$" "Required."
+ask_input "HostName (e.g. github.com, etc)" HOSTNAME "^.+$" "Required."
+ask_choice "Select SSH User" SSH_USER "git" "git" "root" "custom"
+
+if [[ "$SSH_USER" == "custom" ]]; then
+  ask_input "Enter User" SSH_USER "^.+$" "Required."
+fi
+
+SSH_CONFIG="$HOME/.ssh/config"
+touch "$SSH_CONFIG"
+chmod 600 "$SSH_CONFIG"
+
+if grep -qE "^\s*Host\s+$HOST_ALIAS\s*$" "$SSH_CONFIG"; then
+  info "Host '$HOST_ALIAS' already exists in config (skipped)"
+else
+  if [[ -s "$SSH_CONFIG" ]]; then
+    cp "$SSH_CONFIG" "${SSH_CONFIG}.bak.$(date +%s)"
+  fi
+
+  {
+    echo
+    echo "Host $HOST_ALIAS"
+    echo "  HostName $HOSTNAME"
+    echo "  User $SSH_USER"
+    echo "  IdentityFile $KEY_PATH"
+    echo "  IdentitiesOnly yes"
+    echo "  AddKeysToAgent yes"
+    if [[ "$OS" == "Darwin" ]]; then
+      echo "  UseKeychain yes"
+    fi
+  } >> "$SSH_CONFIG"
+
+  info "SSH config updated"
+fi
+
+
+
+# =========================
+# Output
+# =========================
+echo
+echo "======================="
+echo "📋 Public Key:"
+cat  "${KEY_PATH}.pub"
+echo "======================="
+
+if command -v pbcopy &>/dev/null; then
+  pbcopy < "$KEY_PATH.pub"
+  echo "✅ Copied (macOS)"
+elif command -v wl-copy &>/dev/null; then
+  wl-copy < "$KEY_PATH.pub"
+  echo "✅ Copied (Wayland)"
+elif command -v xclip &>/dev/null; then
+  xclip -selection clipboard < "$KEY_PATH.pub"
+  echo "✅ Copied (X11)"
+else
+  warn "Clipboard tool not found"
+fi
+
+if [[ "$SSH_USER" == "git" && "$HOSTNAME" == *"github.com"* ]]; then
+  echo
+  echo "👉 Add the SHH key to GitHub:"
+  echo "   https://github.com/settings/ssh/new"
+
+  if command -v xdg-open &>/dev/null; then
+    xdg-open "https://github.com/settings/ssh/new" >/dev/null 2>&1 &
+  elif command -v open &>/dev/null; then
+    open "https://github.com/settings/ssh/new" >/dev/null 2>&1 &
+  fi
+fi
