@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p ~/.local/bin/scripts
+
+ln -sfn ~/personal/dev/env/private_dot_local/bin/scripts/tmux-sessionizer/tmux-sessionizer ~/.local/bin/scripts/
+
+find -L ~/.local/bin/scripts -type l -delete
