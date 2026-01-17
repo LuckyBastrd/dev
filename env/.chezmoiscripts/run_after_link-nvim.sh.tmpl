@@ -1,0 +1,10 @@
+#!/bin/bash
+
+TARGET_DIR="{{ .chezmoi.homeDir }}/.config"
+SOURCE_DIR="{{ .chezmoi.sourceDir }}/submodules/external_nvim"
+
+mkdir -p "$TARGET_DIR"
+
+ln -sfn "$SOURCE_DIR" "$TARGET_DIR/nvim"
+
+find -L "$TARGET_DIR" -type l -exec rm -- {} +

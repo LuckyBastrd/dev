@@ -1,0 +1,8 @@
+[submodule "env/submodules/external_nvim"]
+	path = env/submodules/external_nvim
+	url = git@github.com:LuckyBastrd/init.lua.git
+	branch = main
+[submodule "env/submodules/external_tmux-sessionizer"]
+	path = env/submodules/external_tmux-sessionizer
+	url = git@github.com:LuckyBastrd/tmux-sessionizer.git
+	branch = master

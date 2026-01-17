@@ -3,7 +3,6 @@ README.md
 submodules
 run-dev-env
 dev-commit
-external
 
 {{ if eq .chezmoi.os "linux" }}
 .config/aerospace/
