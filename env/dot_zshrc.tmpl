@@ -1,0 +1,101 @@
+clear
+
+# Helpers / Functions
+chezmoi-cd() {
+    cd $(chezmoi source-path)
+}
+
+chezmoi-apply() {
+    chezmoi apply --exclude=externals "$@"
+}
+
+addToPath() {
+    if [[ "$PATH" != *"$1"* ]]; then
+        export PATH=$PATH:$1
+    fi
+}
+
+# addToPathFront() {
+#     if [[ "$PATH" != *"$1"* ]]; then
+#         export PATH=$1:$PATH
+#     fi
+# }
+
+addToPathFront() {
+    if [[ ! -z "$2" ]] || [[ "$PATH" != *"$1"* ]]; then
+        export PATH=$1:$PATH
+    fi
+}
+
+# Zsh Environment / History
+export HISTFILE="$XDG_STATE_HOME/zsh/histfile"
+export ZSH_COMPDUMP="$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"
+
+export HISTSIZE=10000
+export SAVEHIST=50000
+
+# History Options
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+
+# MANPATH tweak
+if [[ -n "${MANPATH-}" ]]; then
+  export MANPATH=":${MANPATH#:}"
+fi
+
+# Aliases
+if [ -f "$HOME/.zsh_aliases" ]; then
+    source "$HOME/.zsh_aliases"
+fi
+
+# PATH Updates
+addToPathFront $HOME/.local/scripts
+addToPathFront $HOME/.local/bin
+addToPathFront $HOME/.local/n/bin/
+{{- if eq .osid "darwin" }}
+addToPathFront "/opt/homebrew/bin"
+addToPathFront "/opt/homebrew/sbin"
+
+# Homebrew Zsh completions
+fpath=("/opt/homebrew/share/zsh/site-functions" $fpath)
+{{- end }}
+
+# Starship Setup
+export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+eval "$(starship init zsh)"
+
+# FZF Setup
+source <(fzf --zsh)
+
+# Custom FZF theme
+source ~/.config/fzf/moonfly-fzf.sh
+
+# zsh completions
+autoload -Uz compinit
+compinit
+
+zstyle ':completion:*' menu select
+
+# Load all custom ZLE widgets
+[[ -f ~/.config/zsh/widgets.zsh ]] && source ~/.config/zsh/widgets.zsh
+
+# Keybindings
+
+
+# Enable history search using arrow keys
+autoload -U history-search-end
+zle -N history-beginning-search-backward-end history-search-end
+zle -N history-beginning-search-forward-end history-search-end
+bindkey "^[[A" history-beginning-search-backward-end
+bindkey "^[[B" history-beginning-search-forward-end
+
+# PNPM Setup
+export PNPM_HOME="$HOME/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# Zoxide Setup
+eval "$(zoxide init zsh)"

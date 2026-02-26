@@ -1,0 +1,48 @@
+set -g default-terminal "tmux-256color"
+set -s escape-time 0
+
+# status line theme
+set -g @tmux-theme "~/.config/tmux/themes/moonfly.conf"
+
+# load tmux status line
+run-shell ~/.config/tmux/plugins/statusbar.tmux
+
+# Key Bindings & Settings
+{{- if eq .osid "darwin" }}
+set-option -g default-command "${SHELL}"
+{{- end }}
+unbind C-b
+set-option -g prefix C-a
+bind-key C-a send-prefix
+set -g base-index 1
+bind-key x kill-pane
+set -g detach-on-destroy off
+
+set-window-option -g mode-keys vi
+bind -T copy-mode-vi v send-keys -X begin-selection
+bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel 'xclip -in -selection clipboard'
+
+# vim-like pane switching
+bind -r ^ last-window
+bind -r k select-pane -U
+bind -r j select-pane -D
+bind -r h select-pane -L
+bind -r l select-pane -R
+
+# sesh
+bind-key -n C-f run-shell "sesh connect \"$(
+  ~/.config/sesh/scripts/sesh-find --icons | fzf-tmux -p 80%,70% \
+    --no-sort --ansi --border-label ' sesh ' --prompt '⚡  ' \
+    --header '  ^a all ^t tmux ^g configs ^x zoxide ^d tmux kill ^f find' \
+    --bind 'tab:down,btab:up' \
+    --bind 'ctrl-a:change-prompt(⚡  )+reload(~/.config/sesh/scripts/sesh-find --icons)' \
+    --bind 'ctrl-t:change-prompt(🪟  )+reload(sesh list -t --icons)' \
+    --bind 'ctrl-g:change-prompt(⚙️  )+reload(sesh list -c --icons)' \
+    --bind 'ctrl-x:change-prompt(📁  )+reload(sesh list -z --icons)' \
+    --bind 'ctrl-f:change-prompt(🔎  )+reload( (fd -H -d 2 -t d -E .git . ; fd -H -d 2 -t d -E .git . ~) )' \
+    --bind 'ctrl-d:execute(tmux kill-session -t {2..})+change-prompt(⚡  )+reload(sesh list --icons)' \
+    --preview-window 'right:55%' \
+    --preview 'sesh preview {}'
+)\""
+
+

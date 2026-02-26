@@ -1,0 +1,26 @@
+[default_session]
+startup_command = "~/.config/sesh/scripts/tmux_scratch"
+
+[[session]]
+name = "personal"
+path = "~/personal"
+
+[[session]]
+name = "dev-env"
+path = "~/personal/dev"
+
+[[session]]
+name = "nvim-config"
+path = "~/personal/dev/env/dot_config/external_nvim"
+
+[[session]]
+name = "career"
+path = "~/personal/career"
+
+[[session]]
+name = "work"
+path = "~/personal/work"
+
+[[session]]
+name = "build"
+path = "~/personal/build"

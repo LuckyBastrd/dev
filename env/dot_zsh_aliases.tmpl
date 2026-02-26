@@ -1,0 +1,19 @@
+# Tmux
+# alias tmux="$(which tmux) -2"
+
+# Editor
+alias vim='nvim'
+{{- if eq .osid "darwin" }}
+alias xcode="xed ."
+{{ end }}
+
+# Utils
+alias cd=z
+alias cz=chezmoi
+alias jadwal=jadwal-shalat
+
+# System
+alias pathlist="echo \$PATH | tr ':' '\n'"
+{{- if eq .osid "linux" }}
+alias tutup='shutdown now'
+{{ end }}

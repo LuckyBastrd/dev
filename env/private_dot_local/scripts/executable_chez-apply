@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CHEZMOI_SRC="$(chezmoi source-path)"
+ADDED=$(chezmoi status | awk '$1 ~ /^A/ {print $2}' || true)
+MODIFIED=$(chezmoi status | awk '$1 ~ /^M/ {print $2}' || true)
+DELETED=$(chezmoi status | awk '$1 ~ /^D/ {print $2}' || true)
+
+if [[ -z "$ADDED" && -z "$MODIFIED" && -z "$DELETED" ]]; then
+    exit 0
+fi
+
+ADDED_TO_APPLY=()
+ADDED_LOGS=()
+
+MODIFIED_TO_APPLY=()
+MODIFIED_LOGS=()
+
+DELETED_TO_APPLY=()
+DELETED_LOGS=()
+
+map_chezmoi_targets() {
+    local input_data="$1"
+    local -n log_arr="$2"
+    local -n target_arr="$3"
+
+    while IFS= read -r file; do
+        [[ -z "$file" ]] && continue
+
+        log_arr+=("$file")
+        target_arr+=("$HOME/$file")
+    done <<< "$input_data"
+}
+
+map_chezmoi_targets "$ADDED" ADDED_LOGS ADDED_TO_APPLY
+map_chezmoi_targets "$MODIFIED" MODIFIED_LOGS MODIFIED_TO_APPLY
+map_chezmoi_targets "$DELETED" DELETED_LOGS DELETED_TO_APPLY
+
+chezmoi_apply() {
+    local -n targets=$1
+    local -n logs=$2
+    local title=$3
+
+    if [[ ${#targets[@]} -gt 0 ]]; then
+        echo
+        echo "[chezmoi] $title (${#logs[@]})"
+        echo
+
+        for i in "${!targets[@]}"; do
+            echo "> ${logs[$i]}"
+
+            if chezmoi apply "${targets[$i]}"; then
+                echo "  - Applied: ${logs[$i]} ✔"
+            else
+                echo "  - Failed to apply: ${logs[$i]} ✖"
+            fi
+
+            echo
+        done
+    fi
+}
+
+chezmoi_apply ADDED_TO_APPLY ADDED_LOGS "Detected New Files"
+chezmoi_apply MODIFIED_TO_APPLY MODIFIED_LOGS "Detected Modified Files"
+
+chezmoi_handle_deleted() {
+    local -n targets=$1
+    local -n logs=$2
+    local title=$3
+
+    if [[ ${#targets[@]} -eq 0 ]]; then
+        return
+    fi
+
+    echo
+    echo "[chezmoi] $title (${#logs[@]})"
+    echo
+
+    for i in "${!targets[@]}"; do
+        echo "> ${logs[$i]}"
+
+        while true; do
+            read -n 1 -r -p "File '${logs[$i]}' is missing. [a]pply / [f]orget / [s]kip? " choice
+            echo
+            case "$choice" in
+                a|A)
+                    if chezmoi apply "${targets[$i]}"; then
+                        echo "  - Applied: ${logs[$i]} ✔"
+                    else
+                        echo "  - Failed: ${logs[$i]} ✖"
+                    fi
+                    break
+                    ;;
+                f|F)
+                    if chezmoi forget --force "${targets[$i]}"; then
+                        echo "  - Forgot from source: ${logs[$i]} ✔"
+                    else
+                        echo "  - Failed to forget: ${logs[$i]} ✖"
+                    fi
+                    break
+                    ;;
+                s|S)
+                    echo "  - Skipped: ${logs[$i]}"
+                    break
+                    ;;
+                *)
+                    echo "Please press 'a', 'f', or 's'."
+                    ;;
+            esac
+        done
+
+        echo
+    done
+}
+
+chezmoi_handle_deleted DELETED_TO_APPLY DELETED_LOGS "Detected Deleted Files"

@@ -7,3 +7,16 @@
 #    type = "git-repo"
 #    url = "git@github.com:LuckyBastrd/tmux-sessionizer.git"
 #    refreshPeriod = "168h"
+
+# [".local/scripts/tmux-sessionizer"]
+#     type = "file"
+#     url = "https://raw.githubusercontent.com/ThePrimeagen/tmux-sessionizer/refs/heads/master/tmux-sessionizer"
+#     refreshPeriod = "168h"
+#     executable = true
+
+# [".oh-my-zsh"]
+#     type = "archive"
+#     url = "https://github.com/ohmyzsh/ohmyzsh/archive/master.tar.gz"
+#     exact = true
+#     stripComponents = 1
+#     refreshPeriod = "168h"

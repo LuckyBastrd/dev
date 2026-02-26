@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [[ "$(pwd)" == $HOME/personal ]]; then
+    clear
+    exit 0
+fi
+tmux new-window -dn scratch
+${EDITOR:-vim} .
+clear

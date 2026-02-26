@@ -199,7 +199,7 @@ echo "======================="
 echo "🛠️  SSH Config Setup"
 echo "======================="
 
-ask_input "Host alias (e.g. github, etc)" HOST_ALIAS "^.+$" "Required."
+ask_input "Host alias (e.g. github github.com, etc)" HOST_ALIAS "^.+$" "Required."
 ask_input "HostName (e.g. github.com, etc)" HOSTNAME "^.+$" "Required."
 ask_choice "Select SSH User" SSH_USER "git" "git" "root" "custom"
 

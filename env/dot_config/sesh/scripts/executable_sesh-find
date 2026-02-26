@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+SESH_ARGS="$@"
+
+scan_configs=(
+    "$HOME:2"
+    "$HOME/personal:1"
+    "$HOME/personal/build/swift/:1"
+)
+
+ignore_list=(
+    ".git"
+    "dev"
+)
+
+CUSTOM_ICON=" "
+
+fd_ignores=()
+for item in "${ignore_list[@]}"; do
+  fd_ignores+=("--exclude" "$item")
+done
+
+ZOXIDE_PATHS=""
+if [[ "$SESH_ARGS" == *"-z"* ]] || [[ "$SESH_ARGS" == *"zoxide"* ]]; then
+    ZOXIDE_PATHS=$(zoxide query -l | sed "s|$HOME|~|" | sed "s|/$||")
+fi
+
+{
+  sesh list $SESH_ARGS | sed "s|$HOME|~|" | sed "s|/$||"
+
+  for config in "${scan_configs[@]}"; do
+    dir="${config%%:*}"
+    depth="${config##*:}"
+
+    if [[ -d "$dir" ]]; then
+      fd_output=$(fd . "$dir" --max-depth "$depth" --type d --absolute-path "${fd_ignores[@]}" | sed "s|$HOME|~|" | sed "s|/$||" | sort)
+
+      while read -r line; do
+        [[ -z "$line" ]] && continue
+
+        if [[ -n "$ZOXIDE_PATHS" ]] && echo "$ZOXIDE_PATHS" | grep -qFx "$line"; then
+            continue # Lewati jika sudah ada di Zoxide
+        fi
+
+        if [[ "$SESH_ARGS" == *"--icons"* ]]; then
+          echo "$CUSTOM_ICON$line"
+        else
+          echo "$line"
+        fi
+      done <<< "$fd_output"
+    fi
+  done
+} | awk '!seen[$0]++'

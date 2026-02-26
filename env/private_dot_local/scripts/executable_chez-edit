@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+DEV="$DEV_ENV_HOME"
+
+DIR_ICON=""
+FILE_ICON=""
+
+CLEAN_PATTERNS=(
+    -e 's/private_dot_/./g'
+    -e 's/dot_/./g'
+    -e 's/executable_//g'
+    -e 's/private_//g'
+    -e 's|external_||g'
+)
+
+EXCLUDE_RULES=(
+    --exclude ".git"
+    --exclude ".DS_Store"
+)
+
+clean_chezmoi_name() {
+    sed "${CLEAN_PATTERNS[@]}" <<< "$1"
+}
+
+get_submodule_paths() {
+    [ -f "$DEV/.gitmodules" ] && \
+    git -C "$DEV" config --file "$DEV/.gitmodules" --get-regexp path 2>/dev/null | awk '{print $2}'
+}
+
+get_files() {
+    EXCLUDES=("${EXCLUDE_RULES[@]}")
+
+    while read -r sub_path; do
+        [ -n "$sub_path" ] && EXCLUDES+=(--exclude "$sub_path/*")
+    done < <(get_submodule_paths)
+
+    fd -t f -H . "$DEV" "${EXCLUDES[@]}" | while read -r path; do
+        rel_path="${path#$DEV/}"
+        display_name=$(clean_chezmoi_name "$rel_path")
+        printf "%s %s\t%s\n" "$FILE_ICON" "$display_name" "$path"
+    done
+}
+
+get_submodules() {
+    while read -r sub_path; do
+        [ -n "$sub_path" ] || continue
+        abs_path="$DEV/$sub_path"
+        display_name=$(clean_chezmoi_name "$sub_path")
+        printf "%s %s\t%s\n" "$DIR_ICON" "$display_name" "$abs_path"
+    done < <(get_submodule_paths)
+}
+
+SELECTED=$(
+    (get_files; get_submodules) | fzf \
+        --with-nth=1 \
+        --delimiter=$'\t' \
+        --height=50% \
+        --reverse \
+        --border-label=' dev ' \
+        --border \
+        --prompt='</> '
+)
+
+if [[ -n "$SELECTED" ]]; then
+    REAL_PATH=$(printf "%s" "$SELECTED" | awk -F $'\t' '{print $2}')
+
+    if [[ -d "$REAL_PATH" ]]; then
+        cd "$REAL_PATH" || exit 1
+        "${EDITOR:-vim}" .
+    else
+        cd "$DEV" || exit 1
+        "${EDITOR:-vim}" "$REAL_PATH"
+    fi
+fi
+
+# chez-apply

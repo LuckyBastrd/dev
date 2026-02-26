@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+# ==============================
+# SELECT CITY FROM PARAMETER
+# ==============================
+CITY_ARG=${1:-jakarta}   # default to "jakarta" if no parameter provided
+
+case "$CITY_ARG" in
+    jakarta)
+        PROV="DKI Jakarta"
+        CITY="Kota Jakarta"
+        ;;
+    tanjungpinang)
+        PROV="Kepulauan Riau"
+        CITY="Kota Tanjung Pinang"
+        ;;
+    *)
+        echo "Invalid city! Choose 'jakarta' or 'tanjungpinang'"
+        exit 1
+        ;;
+esac
+
+# ==============================
+# API & CURRENT DATE
+# ==============================
+API="https://equran.id/api/v2/shalat"
+
+MONTH=$(date +%m | sed 's/^0//')
+YEAR=$(date +%Y)
+DAY=$(date +%d | sed 's/^0//')
+
+# ==============================
+# REQUEST API
+# ==============================
+DATA=$(curl -s -X POST "$API" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"provinsi\": \"$PROV\",
+    \"kabkota\": \"$CITY\",
+    \"bulan\": $MONTH,
+    \"tahun\": $YEAR
+  }")
+
+# ==============================
+# VALIDATE RESPONSE
+# ==============================
+if ! echo "$DATA" | jq -e '.code == 200' > /dev/null; then
+  echo "API Error:"
+  echo "$DATA" | jq
+  exit 1
+fi
+
+# ==============================
+# EXTRACT TODAY'S SCHEDULE
+# ==============================
+IMSAK=$(echo "$DATA" | jq -r ".data.jadwal[] | select(.tanggal == $DAY) | .imsak")
+FAJR=$(echo "$DATA" | jq -r ".data.jadwal[] | select(.tanggal == $DAY) | .subuh")
+DHUHR=$(echo "$DATA" | jq -r ".data.jadwal[] | select(.tanggal == $DAY) | .dzuhur")
+ASR=$(echo "$DATA" | jq -r ".data.jadwal[] | select(.tanggal == $DAY) | .ashar")
+MAGHRIB=$(echo "$DATA" | jq -r ".data.jadwal[] | select(.tanggal == $DAY) | .maghrib")
+ISHA=$(echo "$DATA" | jq -r ".data.jadwal[] | select(.tanggal == $DAY) | .isya")
+DAY_NAME=$(echo "$DATA" | jq -r ".data.jadwal[] | select(.tanggal == $DAY) | .hari")
+
+# ==============================
+# OUTPUT
+# ==============================
+echo ""
+echo "🕌 Prayer Times Today"
+echo "📍 $CITY, $PROV"
+echo "📅 $DAY_NAME, $DAY-$MONTH-$YEAR"
+echo "----------------------------------"
+echo "Imsak   : $IMSAK"
+echo "Fajr    : $FAJR"
+echo "Dhuhr   : $DHUHR"
+echo "Asr     : $ASR"
+echo "Maghrib : $MAGHRIB"
+echo "Isha    : $ISHA"
+echo ""

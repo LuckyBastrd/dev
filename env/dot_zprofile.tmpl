@@ -1,0 +1,25 @@
+# XDG Base Directories
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+export XDG_CACHE_HOME="$HOME/.cache"
+export DEV_ENV_HOME="$HOME/personal/dev"
+
+# Editors
+VIM="nvim"
+export EDITOR="$VIM"
+export GIT_EDITOR="$VIM"
+
+# Language Environment
+export N_PREFIX="$HOME/.local/n"
+{{- if eq .osid "darwin" }}
+
+# Homebrew Environment
+export HOMEBREW_PREFIX="/opt/homebrew"
+export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+export HOMEBREW_REPOSITORY="/opt/homebrew"
+
+# INFOPATH Setup
+export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
+{{- end }}
+

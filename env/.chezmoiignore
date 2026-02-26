@@ -1,11 +1,11 @@
 **/.DS_Store
 README.md
-submodules
 run-dev-env
-dev-commit
+.config/nvim
 
 {{ if eq .chezmoi.os "linux" }}
 .config/aerospace/
+.config/karabiner/karabiner.json
 {{ end }}
 
 {{ if eq .chezmoi.os "darwin" }}

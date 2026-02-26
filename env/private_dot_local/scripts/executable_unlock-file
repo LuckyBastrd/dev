@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ -z "$1" ]; then
+  echo "Usage: ./unlock.sh <filename.enc>"
+  exit 1
+fi
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  copy_cmd="pbcopy"
+elif command -v xclip >/dev/null; then
+  copy_cmd="xclip -selection clipboard"
+elif command -v xsel >/dev/null; then
+  copy_cmd="xsel --clipboard --input"
+else
+  echo "Error: No clipboard tool found. Install 'xclip' or 'xsel' for Linux."
+  exit 1
+fi
+
+openssl enc -aes-256-cbc -d -salt -pbkdf2 -iter 100000 -in "$1" | $copy_cmd
+
+if [ $? -eq 0 ]; then
+  echo "✔ Decrypted and copied to clipboard."
+else
+  echo "✘ Decryption failed (check your password)."
+fi
+

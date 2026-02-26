@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+if [ ! -f "$1" ]; then
+  echo "Usage: ./lock.sh <filename.txt>"
+  exit 1
+fi
+
+FILE=$1
+OUT_FILE="$FILE.enc"
+
+echo "Encrypting $FILE..."
+openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -in "$FILE" -out "$OUT_FILE"
+
+if [ $? -eq 0 ]; then
+  echo "✔ Encrypted file created: $OUT_FILE"
+
+  read -p "Do you want to delete the original unencrypted file? (y/n): " confirm
+  if [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]]; then
+    # Use 'rm -P' on Mac for secure overwrite, or 'shred' on Linux
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      rm -P "$FILE"
+    else
+      shred -u "$FILE"
+    fi
+    echo "✔ Original file deleted securely."
+  fi
+else
+  echo "✘ Encryption failed."
+  exit 1
+fi
+
