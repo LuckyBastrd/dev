@@ -41,7 +41,7 @@ setopt SHARE_HISTORY
 
 # MANPATH tweak
 if [[ -n "${MANPATH-}" ]]; then
-  export MANPATH=":${MANPATH#:}"
+    export MANPATH=":${MANPATH#:}"
 fi
 
 # Aliases
@@ -52,36 +52,36 @@ fi
 # PATH Updates
 addToPathFront $HOME/.local/scripts
 addToPathFront $HOME/.local/bin
+addToPathFront $HOME/.local/go/bin
 addToPathFront $HOME/.local/n/bin/
 {{- if eq .osid "darwin" }}
 addToPathFront "/opt/homebrew/bin"
 addToPathFront "/opt/homebrew/sbin"
 
+{{- end }}
+
+# FZF Setup
+source <(fzf --zsh)
+source ~/.config/fzf/moonfly-fzf.sh
+
+{{- if eq .osid "linux" }}
+
 # Homebrew Zsh completions
 fpath=("/opt/homebrew/share/zsh/site-functions" $fpath)
 {{- end }}
 
-# Starship Setup
-export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
-eval "$(starship init zsh)"
-
-# FZF Setup
-source <(fzf --zsh)
-
-# Custom FZF theme
-source ~/.config/fzf/moonfly-fzf.sh
-
-# zsh completions
+# Custom completions
+fpath=(~/.zsh/completion $fpath)
 autoload -Uz compinit
 compinit
-
 zstyle ':completion:*' menu select
 
 # Load all custom ZLE widgets
-[[ -f ~/.config/zsh/widgets.zsh ]] && source ~/.config/zsh/widgets.zsh
+for f in ~/.zsh/widgets/*.zsh; do
+    source "$f"
+done
 
 # Keybindings
-
 
 # Enable history search using arrow keys
 autoload -U history-search-end
@@ -93,9 +93,13 @@ bindkey "^[[B" history-beginning-search-forward-end
 # PNPM Setup
 export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
+*":$PNPM_HOME:"*) ;;
+*) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
 # Zoxide Setup
 eval "$(zoxide init zsh)"
+
+# Starship Setup
+export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+eval "$(starship init zsh)"

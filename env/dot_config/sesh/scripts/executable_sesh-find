@@ -3,22 +3,25 @@
 SESH_ARGS="$@"
 
 scan_configs=(
-    "$HOME:2"
+    "$HOME:1"
     "$HOME/personal:1"
     "$HOME/personal/build/swift/:1"
+    "$HOME/personal/build/nvim-plugins/:1"
 )
 
-ignore_list=(
-    ".git"
-    "dev"
-)
-
+ignore_list=(".git" "dev")
 CUSTOM_ICON=" "
 
 fd_ignores=()
 for item in "${ignore_list[@]}"; do
-  fd_ignores+=("--exclude" "$item")
+    fd_ignores+=("--exclude" "$item")
 done
+
+RUNNING_SESSIONS=""
+if [[ "$SESH_ARGS" == *"--widget"* ]]; then
+    RUNNING_SESSIONS=$(sesh list -t | sed "s|$HOME|~|" | sed "s|/$||")
+    SESH_ARGS=$(echo "$SESH_ARGS" | sed 's/--widget//g')
+fi
 
 ZOXIDE_PATHS=""
 if [[ "$SESH_ARGS" == *"-z"* ]] || [[ "$SESH_ARGS" == *"zoxide"* ]]; then
@@ -26,28 +29,39 @@ if [[ "$SESH_ARGS" == *"-z"* ]] || [[ "$SESH_ARGS" == *"zoxide"* ]]; then
 fi
 
 {
-  sesh list $SESH_ARGS | sed "s|$HOME|~|" | sed "s|/$||"
-
-  for config in "${scan_configs[@]}"; do
-    dir="${config%%:*}"
-    depth="${config##*:}"
-
-    if [[ -d "$dir" ]]; then
-      fd_output=$(fd . "$dir" --max-depth "$depth" --type d --absolute-path "${fd_ignores[@]}" | sed "s|$HOME|~|" | sed "s|/$||" | sort)
-
-      while read -r line; do
-        [[ -z "$line" ]] && continue
-
-        if [[ -n "$ZOXIDE_PATHS" ]] && echo "$ZOXIDE_PATHS" | grep -qFx "$line"; then
-            continue # Lewati jika sudah ada di Zoxide
-        fi
-
-        if [[ "$SESH_ARGS" == *"--icons"* ]]; then
-          echo "$CUSTOM_ICON$line"
+    sesh list $SESH_ARGS | sed "s|$HOME|~|" | sed "s|/$||" | while read -r line; do
+        if [[ "$@" == *"--widget"* ]] && echo "$RUNNING_SESSIONS" | grep -qFx "$line"; then
+            echo "[TMUX] $line"
         else
-          echo "$line"
+            echo "$line"
         fi
-      done <<< "$fd_output"
-    fi
-  done
+    done
+
+    for config in "${scan_configs[@]}"; do
+        dir="${config%%:*}"
+        depth="${config##*:}"
+
+        if [[ -d "$dir" ]]; then
+            fd_output=$(fd . "$dir" --max-depth "$depth" --type d --absolute-path "${fd_ignores[@]}" | sed "s|$HOME|~|" | sed "s|/$||" | sort)
+
+            while read -r line; do
+                [[ -z "$line" ]] && continue
+
+                if [[ -n "$ZOXIDE_PATHS" ]] && echo "$ZOXIDE_PATHS" | grep -qFx "$line"; then
+                    continue
+                fi
+
+                display_line="$line"
+                if [[ "$@" == *"--widget"* ]] && echo "$RUNNING_SESSIONS" | grep -qFx "$line"; then
+                    display_line="[TMUX] $line"
+                fi
+
+                if [[ "$SESH_ARGS" == *"--icons"* ]]; then
+                    echo "$CUSTOM_ICON$display_line"
+                else
+                    echo "$display_line"
+                fi
+            done <<<"$fd_output"
+        fi
+    done
 } | awk '!seen[$0]++'

@@ -11,6 +11,7 @@ export EDITOR="$VIM"
 export GIT_EDITOR="$VIM"
 
 # Language Environment
+export GOPATH=$HOME/.local/go
 export N_PREFIX="$HOME/.local/n"
 {{- if eq .osid "darwin" }}
 
@@ -22,4 +23,3 @@ export HOMEBREW_REPOSITORY="/opt/homebrew"
 # INFOPATH Setup
 export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
 {{- end }}
-

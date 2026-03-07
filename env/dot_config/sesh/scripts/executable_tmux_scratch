@@ -4,6 +4,13 @@ if [[ "$(pwd)" == $HOME/personal ]]; then
     clear
     exit 0
 fi
+
+
+if compgen -G "*.xcodeproj" > /dev/null || [[ -f Tuist.swift ]]; then
+    clear
+    exit 0
+fi
+
 tmux new-window -dn scratch
 ${EDITOR:-vim} .
 clear

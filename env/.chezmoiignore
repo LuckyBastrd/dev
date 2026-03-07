@@ -6,9 +6,10 @@ run-dev-env
 {{ if eq .chezmoi.os "linux" }}
 .config/aerospace/
 .config/karabiner/karabiner.json
+.zsh/completion/_tuist
 {{ end }}
 
-{{ if eq .chezmoi.os "darwin" }}
+{{ if eq .osid "darwin" }}
 .config/hypr/
 .config/waybar/
 .config/rofi/

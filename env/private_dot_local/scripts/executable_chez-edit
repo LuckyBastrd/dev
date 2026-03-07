@@ -19,12 +19,12 @@ EXCLUDE_RULES=(
 )
 
 clean_chezmoi_name() {
-    sed "${CLEAN_PATTERNS[@]}" <<< "$1"
+    sed "${CLEAN_PATTERNS[@]}" <<<"$1"
 }
 
 get_submodule_paths() {
-    [ -f "$DEV/.gitmodules" ] && \
-    git -C "$DEV" config --file "$DEV/.gitmodules" --get-regexp path 2>/dev/null | awk '{print $2}'
+    [ -f "$DEV/.gitmodules" ] &&
+        git -C "$DEV" config --file "$DEV/.gitmodules" --get-regexp path 2>/dev/null | awk '{print $2}'
 }
 
 get_files() {
@@ -51,14 +51,17 @@ get_submodules() {
 }
 
 SELECTED=$(
-    (get_files; get_submodules) | fzf \
+    (
+        get_files
+        get_submodules
+    ) | fzf \
         --with-nth=1 \
         --delimiter=$'\t' \
         --height=50% \
         --reverse \
         --border-label=' dev ' \
         --border \
-        --prompt='</> '
+        --prompt='󰗀 '
 )
 
 if [[ -n "$SELECTED" ]]; then
