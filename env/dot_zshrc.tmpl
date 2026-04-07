@@ -64,7 +64,7 @@ addToPathFront "/opt/homebrew/sbin"
 source <(fzf --zsh)
 source ~/.config/fzf/moonfly-fzf.sh
 
-{{- if eq .osid "linux" }}
+{{- if eq .osid "darwin" }}
 
 # Homebrew Zsh completions
 fpath=("/opt/homebrew/share/zsh/site-functions" $fpath)
@@ -103,3 +103,5 @@ eval "$(zoxide init zsh)"
 # Starship Setup
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 eval "$(starship init zsh)"
+
+eval "$(mise activate zsh)"

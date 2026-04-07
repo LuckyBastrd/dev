@@ -13,6 +13,10 @@ path = "~/personal/dev"
 name = "nvim-config"
 path = "~/personal/dev/env/dot_config/external_nvim"
 
+[[session]]
+name = "nvim-nightly-config"
+path = "~/.config/nvim-nightly"
+
 # [[session]]
 # name = "career"
 # path = "~/personal/career"

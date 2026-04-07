@@ -57,7 +57,7 @@ ask_input() {
     read -rp "$prompt: " input
     if [[ "$input" =~ $regex ]]; then
       printf -v "$var_ref" "%s" "$input"
-      break # Langsung break tanpa echo tambahan
+      break
     else
       echo -ne "\033[1A\033[2K$prompt: $input ❌ $err_msg"
       sleep 1
